@@ -344,7 +344,7 @@
 
     async function checkUserAndRedirect(user) {
       // Get user data from users table
-      const { data: userData, error } = await supabase
+      const { data: userData, error } = await supabaseClient
         .from('users')
         .select('*')
         .eq('id', user.id)
