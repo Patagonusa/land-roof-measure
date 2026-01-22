@@ -11,6 +11,23 @@ async function init() {
   const configResponse = await fetch('/api/config');
   const config = await configResponse.json();
 
+  // Set up error handler for Maps API
+  window.gm_authFailure = function() {
+    const mapDiv = document.getElementById('map');
+    mapDiv.innerHTML = `
+      <div style="padding: 40px; text-align: center; background: #fff3cd; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h2 style="color: #856404; margin-bottom: 20px;">Google Maps API Key Error</h2>
+        <p style="color: #856404; max-width: 500px; line-height: 1.6;">
+          The API key needs to be configured in Google Cloud Console:<br><br>
+          1. Go to <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a><br>
+          2. Enable "Maps JavaScript API"<br>
+          3. Enable "Geocoding API"<br>
+          4. Check API key restrictions allow this domain
+        </p>
+      </div>
+    `;
+  };
+
   // Load Google Maps script with async loading
   const script = document.createElement('script');
   script.src = `https://maps.googleapis.com/maps/api/js?key=${config.mapsApiKey}&libraries=drawing,geometry&loading=async&callback=initMap`;
