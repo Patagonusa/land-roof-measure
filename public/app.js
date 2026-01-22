@@ -17,13 +17,13 @@ async function init() {
     const mapDiv = document.getElementById('map');
     mapDiv.innerHTML = `
       <div style="padding: 40px; text-align: center; background: #fff3cd; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <h2 style="color: #856404; margin-bottom: 20px;">Google Maps API Key Error</h2>
+        <h2 style="color: #856404; margin-bottom: 20px;">Error de API Key de Google Maps</h2>
         <p style="color: #856404; max-width: 500px; line-height: 1.6;">
-          The API key needs to be configured in Google Cloud Console:<br><br>
-          1. Go to <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a><br>
-          2. Enable "Maps JavaScript API"<br>
-          3. Enable "Geocoding API"<br>
-          4. Check API key restrictions allow this domain
+          La clave API necesita ser configurada en Google Cloud Console:<br><br>
+          1. Ir a <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a><br>
+          2. Habilitar "Maps JavaScript API"<br>
+          3. Habilitar "Geocoding API"<br>
+          4. Verificar que las restricciones de la clave permitan este dominio
         </p>
       </div>
     `;
@@ -173,11 +173,11 @@ async function searchAddress() {
       setTimeout(() => infoWindow.close(), 3000);
 
     } else {
-      alert('Address not found. Please try a different address.');
+      alert('Direccion no encontrada. Por favor intente con otra direccion.');
     }
   } catch (error) {
-    console.error('Search error:', error);
-    alert('Error searching for address. Please try again.');
+    console.error('Error de busqueda:', error);
+    alert('Error al buscar la direccion. Por favor intente de nuevo.');
   }
 }
 

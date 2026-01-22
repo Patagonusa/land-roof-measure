@@ -1,53 +1,53 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="es">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Land & Roof Area Measurement</title>
+  <title>Medidor de Terreno y Techo</title>
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2327ae60' width='100' height='100' rx='10'/><path fill='white' d='M20 70 L50 30 L80 70 Z'/></svg>">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Land & Roof Area Measurement</h1>
+      <h1>Medidor de Terreno y Techo</h1>
     </header>
 
     <div class="search-bar">
-      <input type="text" id="address-input" placeholder="Enter an address..." />
-      <button id="search-btn">Search</button>
+      <input type="text" id="address-input" placeholder="Ingrese una direccion..." />
+      <button id="search-btn">Buscar</button>
     </div>
 
     <div class="main-content">
       <div class="controls">
-        <h3>Drawing Tools</h3>
-        <button id="land-btn" class="tool-btn land">Measure Land</button>
-        <button id="roof-btn" class="tool-btn roof">Measure Roof</button>
-        <button id="clear-btn" class="tool-btn clear">Clear All</button>
+        <h3>Herramientas de Dibujo</h3>
+        <button id="land-btn" class="tool-btn land">Medir Terreno</button>
+        <button id="roof-btn" class="tool-btn roof">Medir Techo</button>
+        <button id="clear-btn" class="tool-btn clear">Borrar Todo</button>
 
         <div class="results">
-          <h3>Measurements</h3>
+          <h3>Mediciones</h3>
           <div class="result-item land">
-            <span class="label">Land Area <span class="section-count">(<span id="land-count">0</span> sections)</span></span>
+            <span class="label">Area del Terreno <span class="section-count">(<span id="land-count">0</span> secciones)</span></span>
             <span id="land-area">0</span> sq ft
             <span class="secondary">(<span id="land-area-m2">0</span> m²)</span>
           </div>
           <div class="result-item roof">
-            <span class="label">Roof Footprint <span class="section-count">(<span id="roof-count">0</span> sections)</span></span>
+            <span class="label">Huella del Techo <span class="section-count">(<span id="roof-count">0</span> secciones)</span></span>
             <span id="roof-area">0</span> sq ft
             <span class="secondary">(<span id="roof-area-m2">0</span> m²)</span>
           </div>
 
           <div class="pitch-section">
-            <label for="roof-pitch">Roof Pitch:</label>
+            <label for="roof-pitch">Pendiente del Techo:</label>
             <select id="roof-pitch">
-              <option value="1.000">Flat (0/12)</option>
+              <option value="1.000">Plano (0/12)</option>
               <option value="1.014">1/12</option>
               <option value="1.027">2/12</option>
               <option value="1.041">3/12</option>
               <option value="1.054">4/12</option>
               <option value="1.068">5/12</option>
-              <option value="1.118" selected>6/12 (Common)</option>
+              <option value="1.118" selected>6/12 (Comun)</option>
               <option value="1.138">7/12</option>
               <option value="1.202">8/12</option>
               <option value="1.250">9/12</option>
@@ -58,26 +58,26 @@
           </div>
 
           <div class="result-item roof adjusted">
-            <span class="label">Actual Roof Area:</span>
+            <span class="label">Area Real del Techo:</span>
             <span id="roof-area-adjusted">0</span> sq ft
             <span class="secondary">(<span id="roof-area-adjusted-m2">0</span> m²)</span>
           </div>
 
           <div class="result-item total">
-            <span class="label">Roofing Squares (Escuadras):</span>
-            <span id="roof-squares">0</span> squares
-            <span class="secondary">(1 square = 100 sq ft)</span>
+            <span class="label">Escuadras de Techo:</span>
+            <span id="roof-squares">0</span> escuadras
+            <span class="secondary">(1 escuadra = 100 sq ft)</span>
           </div>
         </div>
 
         <div class="instructions">
-          <h4>Instructions</h4>
+          <h4>Instrucciones</h4>
           <ol>
-            <li>Enter an address and click Search</li>
-            <li>Click "Measure Land" or "Measure Roof"</li>
-            <li>Click on the map to draw polygon points</li>
-            <li>Double-click to complete the polygon</li>
-            <li>Click a polygon to select it, then press Delete to remove</li>
+            <li>Ingrese una direccion y haga clic en Buscar</li>
+            <li>Haga clic en "Medir Terreno" o "Medir Techo"</li>
+            <li>Haga clic en el mapa para dibujar puntos del poligono</li>
+            <li>Doble clic para completar el poligono</li>
+            <li>Haga clic en un poligono para seleccionarlo, luego presione Suprimir para eliminarlo</li>
           </ol>
         </div>
       </div>
