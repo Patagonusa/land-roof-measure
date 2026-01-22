@@ -97,7 +97,8 @@
     // Authentication check
     async function checkAuth() {
       const config = await fetch('/api/config').then(r => r.json());
-      const supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      const { createClient } = supabase;
+      const supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
 
       const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {

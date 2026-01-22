@@ -230,7 +230,8 @@
     // Initialize
     async function init() {
       const config = await fetch('/api/config').then(r => r.json());
-      supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      const { createClient } = supabase;
+      supabaseClient = createClient(config.supabaseUrl, config.supabaseAnonKey);
 
       // Check if already logged in
       const { data: { session } } = await supabaseClient.auth.getSession();
