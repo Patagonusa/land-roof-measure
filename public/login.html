@@ -225,15 +225,15 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let supabase;
+    let supabaseClient;
 
     // Initialize
     async function init() {
       const config = await fetch('/api/config').then(r => r.json());
-      supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
 
       // Check if already logged in
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (session) {
         checkUserAndRedirect(session.user);
       }
@@ -265,7 +265,7 @@
       btn.textContent = 'Iniciando sesion...';
 
       try {
-        const { data, error } = await supabase.auth.signInWithPassword({
+        const { data, error } = await supabaseClient.auth.signInWithPassword({
           email,
           password
         });
@@ -303,7 +303,7 @@
 
       try {
         // Create auth user
-        const { data: authData, error: authError } = await supabase.auth.signUp({
+        const { data: authData, error: authError } = await supabaseClient.auth.signUp({
           email,
           password,
           options: {
@@ -314,7 +314,7 @@
         if (authError) throw authError;
 
         // Create user record in users table
-        const { error: userError } = await supabase
+        const { error: userError } = await supabaseClient
           .from('users')
           .insert({
             id: authData.user.id,
@@ -358,7 +358,7 @@
 
       if (!userData.approved) {
         showMessage(document.getElementById('login-message'), 'Tu cuenta esta pendiente de aprobacion. Contacta al administrador.', 'warning');
-        await supabase.auth.signOut();
+        await supabaseClient.auth.signOut();
         document.getElementById('login-btn').disabled = false;
         document.getElementById('login-btn').textContent = 'Iniciar Sesion';
         return;

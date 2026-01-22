@@ -272,22 +272,22 @@
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
-    let supabase;
+    let supabaseClient;
     let currentUser;
 
     async function init() {
       const config = await fetch('/api/config').then(r => r.json());
-      supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+      supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
 
       // Check if logged in and is admin
-      const { data: { session } } = await supabase.auth.getSession();
+      const { data: { session } } = await supabaseClient.auth.getSession();
       if (!session) {
         window.location.href = '/login';
         return;
       }
 
       // Verify admin status
-      const { data: userData, error } = await supabase
+      const { data: userData, error } = await supabaseClient
         .from('users')
         .select('*')
         .eq('id', session.user.id)
@@ -309,7 +309,7 @@
       document.getElementById('users-table').style.display = 'none';
       document.getElementById('empty').style.display = 'none';
 
-      const { data: users, error } = await supabase
+      const { data: users, error } = await supabaseClient
         .from('users')
         .select('*')
         .order('created_at', { ascending: false });
@@ -367,7 +367,7 @@
     async function approveUser(userId) {
       if (!confirm('Esta seguro de aprobar este usuario?')) return;
 
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('users')
         .update({ approved: true })
         .eq('id', userId);
@@ -384,7 +384,7 @@
     async function deleteUser(userId, email) {
       if (!confirm(`Esta seguro de eliminar al usuario ${email}? Esta accion no se puede deshacer.`)) return;
 
-      const { error } = await supabase
+      const { error } = await supabaseClient
         .from('users')
         .delete()
         .eq('id', userId);
@@ -403,7 +403,7 @@
     }
 
     async function logout() {
-      await supabase.auth.signOut();
+      await supabaseClient.auth.signOut();
       window.location.href = '/login';
     }
 
