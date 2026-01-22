@@ -152,6 +152,50 @@ header h1 {
   border-left: 4px solid #e74c3c;
 }
 
+.result-item.roof.adjusted {
+  background: #c62828;
+  color: white;
+  border-left: 4px solid #b71c1c;
+}
+
+.result-item.roof.adjusted .label {
+  color: white;
+}
+
+.result-item.roof.adjusted .secondary {
+  color: rgba(255,255,255,0.8);
+}
+
+.pitch-section {
+  margin: 15px 0;
+  padding: 12px;
+  background: #fce4ec;
+  border-radius: 6px;
+}
+
+.pitch-section label {
+  display: block;
+  font-weight: 600;
+  font-size: 0.9rem;
+  color: #c62828;
+  margin-bottom: 8px;
+}
+
+.pitch-section select {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.95rem;
+  border: 2px solid #e74c3c;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  outline: none;
+}
+
+.pitch-section select:focus {
+  border-color: #c62828;
+}
+
 .result-item .label {
   display: block;
   font-weight: 600;

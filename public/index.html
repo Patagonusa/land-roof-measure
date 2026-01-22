@@ -33,9 +33,34 @@
             <span class="secondary">(<span id="land-area-m2">0</span> m²)</span>
           </div>
           <div class="result-item roof">
-            <span class="label">Roof Area:</span>
+            <span class="label">Roof Footprint:</span>
             <span id="roof-area">0</span> sq ft
             <span class="secondary">(<span id="roof-area-m2">0</span> m²)</span>
+          </div>
+
+          <div class="pitch-section">
+            <label for="roof-pitch">Roof Pitch:</label>
+            <select id="roof-pitch">
+              <option value="1.000">Flat (0/12)</option>
+              <option value="1.014">1/12</option>
+              <option value="1.027">2/12</option>
+              <option value="1.041">3/12</option>
+              <option value="1.054">4/12</option>
+              <option value="1.068">5/12</option>
+              <option value="1.118" selected>6/12 (Common)</option>
+              <option value="1.138">7/12</option>
+              <option value="1.202">8/12</option>
+              <option value="1.250">9/12</option>
+              <option value="1.302">10/12</option>
+              <option value="1.357">11/12</option>
+              <option value="1.414">12/12</option>
+            </select>
+          </div>
+
+          <div class="result-item roof adjusted">
+            <span class="label">Actual Roof Area:</span>
+            <span id="roof-area-adjusted">0</span> sq ft
+            <span class="secondary">(<span id="roof-area-adjusted-m2">0</span> m²)</span>
           </div>
         </div>
 

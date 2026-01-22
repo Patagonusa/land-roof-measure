@@ -105,6 +105,9 @@ function setupEventListeners() {
   document.getElementById('roof-btn').addEventListener('click', () => setDrawingMode('roof'));
   document.getElementById('clear-btn').addEventListener('click', clearAll);
 
+  // Pitch selector
+  document.getElementById('roof-pitch').addEventListener('change', updateAreas);
+
   // Keyboard listener for delete
   document.addEventListener('keydown', function(e) {
     if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPolygon) {
@@ -227,11 +230,18 @@ function updateAreas() {
   const landAreaSqFt = landAreaM2 * 10.7639;
   const roofAreaSqFt = roofAreaM2 * 10.7639;
 
+  // Get pitch multiplier
+  const pitchMultiplier = parseFloat(document.getElementById('roof-pitch').value);
+  const adjustedRoofSqFt = roofAreaSqFt * pitchMultiplier;
+  const adjustedRoofM2 = roofAreaM2 * pitchMultiplier;
+
   // Update display
   document.getElementById('land-area').textContent = formatNumber(landAreaSqFt);
   document.getElementById('land-area-m2').textContent = formatNumber(landAreaM2);
   document.getElementById('roof-area').textContent = formatNumber(roofAreaSqFt);
   document.getElementById('roof-area-m2').textContent = formatNumber(roofAreaM2);
+  document.getElementById('roof-area-adjusted').textContent = formatNumber(adjustedRoofSqFt);
+  document.getElementById('roof-area-adjusted-m2').textContent = formatNumber(adjustedRoofM2);
 }
 
 function formatNumber(num) {
