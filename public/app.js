@@ -85,8 +85,14 @@ function initMap() {
     google.maps.event.addListener(polygon.getPath(), 'insert_at', updateAreas);
     google.maps.event.addListener(polygon.getPath(), 'remove_at', updateAreas);
 
-    // Stop drawing after completing a polygon
-    drawingManager.setDrawingMode(null);
+    // Keep drawing mode active so user can draw more sections
+    // Re-enable polygon drawing in the same mode
+    if (currentMode) {
+      setTimeout(() => {
+        drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
+      }, 100);
+    }
+
     updateAreas();
   });
 
@@ -244,8 +250,14 @@ function deleteSelectedPolygon() {
 
 function clearAll() {
   // Clear all polygons from map
-  landPolygons.forEach(p => p.setMap(null));
-  roofPolygons.forEach(p => p.setMap(null));
+  landPolygons.forEach(p => {
+    google.maps.event.clearInstanceListeners(p);
+    p.setMap(null);
+  });
+  roofPolygons.forEach(p => {
+    google.maps.event.clearInstanceListeners(p);
+    p.setMap(null);
+  });
   landPolygons = [];
   roofPolygons = [];
   selectedPolygon = null;
@@ -253,6 +265,11 @@ function clearAll() {
   // Reset drawing mode so user can start fresh
   currentMode = null;
   drawingManager.setDrawingMode(null);
+
+  // Re-attach drawing manager to map to ensure it works
+  drawingManager.setMap(null);
+  drawingManager.setMap(map);
+
   updateButtonStates();
   updateAreas();
 }
