@@ -11,10 +11,11 @@ async function init() {
   const configResponse = await fetch('/api/config');
   const config = await configResponse.json();
 
-  // Load Google Maps script
+  // Load Google Maps script with async loading
   const script = document.createElement('script');
-  script.src = `https://maps.googleapis.com/maps/api/js?key=${config.mapsApiKey}&libraries=drawing,geometry&callback=initMap`;
+  script.src = `https://maps.googleapis.com/maps/api/js?key=${config.mapsApiKey}&libraries=drawing,geometry&loading=async&callback=initMap`;
   script.async = true;
+  script.defer = true;
   document.head.appendChild(script);
 }
 
