@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Roofing - Panel de Administracion</title>
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2327ae60' width='100' height='100' rx='10'/><path fill='white' d='M20 70 L50 30 L80 70 Z'/></svg>">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+      background: #f5f5f5;
+      min-height: 100vh;
+    }
+
+    .header {
+      background: #2c3e50;
+      color: white;
+      padding: 15px 30px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .header h1 {
+      font-size: 1.4rem;
+    }
+
+    .header-actions {
+      display: flex;
+      gap: 15px;
+      align-items: center;
+    }
+
+    .header-actions span {
+      font-size: 0.9rem;
+      opacity: 0.9;
+    }
+
+    .btn {
+      padding: 10px 20px;
+      border: none;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+
+    .btn-primary {
+      background: #3498db;
+      color: white;
+    }
+
+    .btn-primary:hover {
+      background: #2980b9;
+    }
+
+    .btn-success {
+      background: #27ae60;
+      color: white;
+    }
+
+    .btn-success:hover {
+      background: #219a52;
+    }
+
+    .btn-danger {
+      background: #e74c3c;
+      color: white;
+    }
+
+    .btn-danger:hover {
+      background: #c0392b;
+    }
+
+    .btn-outline {
+      background: transparent;
+      border: 2px solid white;
+      color: white;
+    }
+
+    .btn-outline:hover {
+      background: white;
+      color: #2c3e50;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 30px auto;
+      padding: 0 20px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 12px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+      overflow: hidden;
+    }
+
+    .card-header {
+      padding: 20px;
+      border-bottom: 1px solid #eee;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .card-header h2 {
+      font-size: 1.2rem;
+      color: #333;
+    }
+
+    .stats {
+      display: flex;
+      gap: 20px;
+    }
+
+    .stat {
+      padding: 8px 16px;
+      border-radius: 20px;
+      font-size: 0.85rem;
+      font-weight: 600;
+    }
+
+    .stat.pending {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .stat.approved {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .stat.total {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 15px 20px;
+      text-align: left;
+      border-bottom: 1px solid #eee;
+    }
+
+    th {
+      background: #f8f9fa;
+      font-weight: 600;
+      color: #666;
+      font-size: 0.85rem;
+      text-transform: uppercase;
+    }
+
+    td {
+      color: #333;
+    }
+
+    .status {
+      padding: 5px 12px;
+      border-radius: 20px;
+      font-size: 0.8rem;
+      font-weight: 600;
+    }
+
+    .status.pending {
+      background: #fff3e0;
+      color: #e65100;
+    }
+
+    .status.approved {
+      background: #e8f5e9;
+      color: #2e7d32;
+    }
+
+    .status.admin {
+      background: #e3f2fd;
+      color: #1565c0;
+    }
+
+    .actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .actions .btn {
+      padding: 6px 12px;
+      font-size: 0.8rem;
+    }
+
+    .empty {
+      padding: 60px;
+      text-align: center;
+      color: #999;
+    }
+
+    .loading {
+      padding: 60px;
+      text-align: center;
+      color: #666;
+    }
+
+    @media (max-width: 768px) {
+      .header {
+        flex-direction: column;
+        gap: 15px;
+      }
+
+      table {
+        display: block;
+        overflow-x: auto;
+      }
+
+      .stats {
+        flex-wrap: wrap;
+      }
+    }
+  </style>
+</head>
+<body>
+  <div class="header">
+    <h1>Panel de Administracion - Roofing</h1>
+    <div class="header-actions">
+      <span id="admin-email"></span>
+      <button class="btn btn-primary" onclick="goToApp()">Ir a la App</button>
+      <button class="btn btn-outline" onclick="logout()">Cerrar Sesion</button>
+    </div>
+  </div>
+
+  <div class="container">
+    <div class="card">
+      <div class="card-header">
+        <h2>Gestion de Usuarios</h2>
+        <div class="stats">
+          <span class="stat total">Total: <span id="total-count">0</span></span>
+          <span class="stat pending">Pendientes: <span id="pending-count">0</span></span>
+          <span class="stat approved">Aprobados: <span id="approved-count">0</span></span>
+        </div>
+      </div>
+
+      <div id="loading" class="loading">Cargando usuarios...</div>
+
+      <table id="users-table" style="display: none;">
+        <thead>
+          <tr>
+            <th>Nombre</th>
+            <th>Correo</th>
+            <th>Fecha de Registro</th>
+            <th>Estado</th>
+            <th>Acciones</th>
+          </tr>
+        </thead>
+        <tbody id="users-body">
+        </tbody>
+      </table>
+
+      <div id="empty" class="empty" style="display: none;">
+        No hay usuarios registrados
+      </div>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    let supabase;
+    let currentUser;
+
+    async function init() {
+      const config = await fetch('/api/config').then(r => r.json());
+      supabase = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+
+      // Check if logged in and is admin
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session) {
+        window.location.href = '/login';
+        return;
+      }
+
+      // Verify admin status
+      const { data: userData, error } = await supabase
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error || !userData || !userData.is_admin) {
+        window.location.href = '/login';
+        return;
+      }
+
+      currentUser = userData;
+      document.getElementById('admin-email').textContent = userData.email;
+
+      loadUsers();
+    }
+
+    async function loadUsers() {
+      document.getElementById('loading').style.display = 'block';
+      document.getElementById('users-table').style.display = 'none';
+      document.getElementById('empty').style.display = 'none';
+
+      const { data: users, error } = await supabase
+        .from('users')
+        .select('*')
+        .order('created_at', { ascending: false });
+
+      document.getElementById('loading').style.display = 'none';
+
+      if (error) {
+        console.error('Error loading users:', error);
+        return;
+      }
+
+      if (!users || users.length === 0) {
+        document.getElementById('empty').style.display = 'block';
+        return;
+      }
+
+      // Update stats
+      const pending = users.filter(u => !u.approved).length;
+      const approved = users.filter(u => u.approved).length;
+      document.getElementById('total-count').textContent = users.length;
+      document.getElementById('pending-count').textContent = pending;
+      document.getElementById('approved-count').textContent = approved;
+
+      // Render table
+      const tbody = document.getElementById('users-body');
+      tbody.innerHTML = users.map(user => `
+        <tr>
+          <td>${user.name || '-'}</td>
+          <td>${user.email}</td>
+          <td>${new Date(user.created_at).toLocaleDateString('es-ES')}</td>
+          <td>
+            ${user.is_admin
+              ? '<span class="status admin">Admin</span>'
+              : user.approved
+                ? '<span class="status approved">Aprobado</span>'
+                : '<span class="status pending">Pendiente</span>'
+            }
+          </td>
+          <td class="actions">
+            ${!user.approved && !user.is_admin
+              ? `<button class="btn btn-success" onclick="approveUser('${user.id}')">Aprobar</button>`
+              : ''
+            }
+            ${!user.is_admin && user.id !== currentUser.id
+              ? `<button class="btn btn-danger" onclick="deleteUser('${user.id}', '${user.email}')">Eliminar</button>`
+              : ''
+            }
+          </td>
+        </tr>
+      `).join('');
+
+      document.getElementById('users-table').style.display = 'table';
+    }
+
+    async function approveUser(userId) {
+      if (!confirm('Esta seguro de aprobar este usuario?')) return;
+
+      const { error } = await supabase
+        .from('users')
+        .update({ approved: true })
+        .eq('id', userId);
+
+      if (error) {
+        alert('Error al aprobar usuario');
+        console.error(error);
+        return;
+      }
+
+      loadUsers();
+    }
+
+    async function deleteUser(userId, email) {
+      if (!confirm(`Esta seguro de eliminar al usuario ${email}? Esta accion no se puede deshacer.`)) return;
+
+      const { error } = await supabase
+        .from('users')
+        .delete()
+        .eq('id', userId);
+
+      if (error) {
+        alert('Error al eliminar usuario');
+        console.error(error);
+        return;
+      }
+
+      loadUsers();
+    }
+
+    function goToApp() {
+      window.location.href = '/app';
+    }
+
+    async function logout() {
+      await supabase.auth.signOut();
+      window.location.href = '/login';
+    }
+
+    init();
+  </script>
+</body>
+</html>

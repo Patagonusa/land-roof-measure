@@ -11,6 +11,11 @@
   <div class="container">
     <header>
       <h1>Medidor de Terreno y Techo</h1>
+      <div class="header-actions">
+        <span id="user-email"></span>
+        <button id="admin-link" class="header-btn" style="display:none;" onclick="window.location.href='/admin'">Admin</button>
+        <button id="logout-btn" class="header-btn" onclick="logout()">Cerrar Sesion</button>
+      </div>
     </header>
 
     <div class="search-bar">
@@ -86,6 +91,50 @@
     </div>
   </div>
 
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script src="app.js"></script>
+  <script>
+    // Authentication check
+    async function checkAuth() {
+      const config = await fetch('/api/config').then(r => r.json());
+      const supabaseClient = window.supabase.createClient(config.supabaseUrl, config.supabaseAnonKey);
+
+      const { data: { session } } = await supabaseClient.auth.getSession();
+      if (!session) {
+        window.location.href = '/login';
+        return;
+      }
+
+      // Get user data
+      const { data: userData, error } = await supabaseClient
+        .from('users')
+        .select('*')
+        .eq('id', session.user.id)
+        .single();
+
+      if (error || !userData || !userData.approved) {
+        await supabaseClient.auth.signOut();
+        window.location.href = '/login';
+        return;
+      }
+
+      document.getElementById('user-email').textContent = userData.email;
+      if (userData.is_admin) {
+        document.getElementById('admin-link').style.display = 'inline-block';
+      }
+
+      // Store supabase client for logout
+      window.supabaseClient = supabaseClient;
+    }
+
+    async function logout() {
+      if (window.supabaseClient) {
+        await window.supabaseClient.auth.signOut();
+      }
+      window.location.href = '/login';
+    }
+
+    checkAuth();
+  </script>
 </body>
 </html>
