@@ -1,0 +1,205 @@
+* {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+body {
+  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+  background: #f5f5f5;
+}
+
+.container {
+  height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+header {
+  background: #2c3e50;
+  color: white;
+  padding: 15px 20px;
+}
+
+header h1 {
+  font-size: 1.5rem;
+  font-weight: 500;
+}
+
+.search-bar {
+  display: flex;
+  padding: 15px 20px;
+  background: white;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+  gap: 10px;
+}
+
+#address-input {
+  flex: 1;
+  padding: 12px 15px;
+  font-size: 1rem;
+  border: 2px solid #ddd;
+  border-radius: 6px;
+  outline: none;
+  transition: border-color 0.2s;
+}
+
+#address-input:focus {
+  border-color: #3498db;
+}
+
+#search-btn {
+  padding: 12px 30px;
+  font-size: 1rem;
+  background: #3498db;
+  color: white;
+  border: none;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+#search-btn:hover {
+  background: #2980b9;
+}
+
+.main-content {
+  flex: 1;
+  display: flex;
+  overflow: hidden;
+}
+
+.controls {
+  width: 280px;
+  background: white;
+  padding: 20px;
+  overflow-y: auto;
+  box-shadow: 2px 0 4px rgba(0,0,0,0.1);
+}
+
+.controls h3 {
+  font-size: 1rem;
+  color: #2c3e50;
+  margin-bottom: 15px;
+}
+
+.tool-btn {
+  display: block;
+  width: 100%;
+  padding: 12px;
+  margin-bottom: 10px;
+  font-size: 0.95rem;
+  border: 2px solid;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.2s;
+  font-weight: 500;
+}
+
+.tool-btn.land {
+  background: white;
+  border-color: #27ae60;
+  color: #27ae60;
+}
+
+.tool-btn.land:hover, .tool-btn.land.active {
+  background: #27ae60;
+  color: white;
+}
+
+.tool-btn.roof {
+  background: white;
+  border-color: #e74c3c;
+  color: #e74c3c;
+}
+
+.tool-btn.roof:hover, .tool-btn.roof.active {
+  background: #e74c3c;
+  color: white;
+}
+
+.tool-btn.clear {
+  background: white;
+  border-color: #95a5a6;
+  color: #7f8c8d;
+}
+
+.tool-btn.clear:hover {
+  background: #95a5a6;
+  color: white;
+}
+
+.results {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.result-item {
+  padding: 12px;
+  margin-bottom: 10px;
+  border-radius: 6px;
+  font-size: 0.95rem;
+}
+
+.result-item.land {
+  background: #e8f5e9;
+  border-left: 4px solid #27ae60;
+}
+
+.result-item.roof {
+  background: #ffebee;
+  border-left: 4px solid #e74c3c;
+}
+
+.result-item .label {
+  display: block;
+  font-weight: 600;
+  margin-bottom: 4px;
+}
+
+.result-item .secondary {
+  color: #666;
+  font-size: 0.85rem;
+}
+
+.instructions {
+  margin-top: 25px;
+  padding-top: 20px;
+  border-top: 1px solid #eee;
+}
+
+.instructions h4 {
+  font-size: 0.9rem;
+  color: #2c3e50;
+  margin-bottom: 10px;
+}
+
+.instructions ol {
+  padding-left: 20px;
+  color: #666;
+  font-size: 0.85rem;
+  line-height: 1.8;
+}
+
+#map {
+  flex: 1;
+  background: #e0e0e0;
+}
+
+@media (max-width: 768px) {
+  .main-content {
+    flex-direction: column;
+  }
+
+  .controls {
+    width: 100%;
+    order: 2;
+    max-height: 250px;
+  }
+
+  #map {
+    order: 1;
+    min-height: 400px;
+  }
+}

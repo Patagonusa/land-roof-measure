@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Land & Roof Area Measurement</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Land & Roof Area Measurement</h1>
+    </header>
+
+    <div class="search-bar">
+      <input type="text" id="address-input" placeholder="Enter an address..." />
+      <button id="search-btn">Search</button>
+    </div>
+
+    <div class="main-content">
+      <div class="controls">
+        <h3>Drawing Tools</h3>
+        <button id="land-btn" class="tool-btn land">Measure Land</button>
+        <button id="roof-btn" class="tool-btn roof">Measure Roof</button>
+        <button id="clear-btn" class="tool-btn clear">Clear All</button>
+
+        <div class="results">
+          <h3>Measurements</h3>
+          <div class="result-item land">
+            <span class="label">Land Area:</span>
+            <span id="land-area">0</span> sq ft
+            <span class="secondary">(<span id="land-area-m2">0</span> m²)</span>
+          </div>
+          <div class="result-item roof">
+            <span class="label">Roof Area:</span>
+            <span id="roof-area">0</span> sq ft
+            <span class="secondary">(<span id="roof-area-m2">0</span> m²)</span>
+          </div>
+        </div>
+
+        <div class="instructions">
+          <h4>Instructions</h4>
+          <ol>
+            <li>Enter an address and click Search</li>
+            <li>Click "Measure Land" or "Measure Roof"</li>
+            <li>Click on the map to draw polygon points</li>
+            <li>Double-click to complete the polygon</li>
+            <li>Click a polygon to select it, then press Delete to remove</li>
+          </ol>
+        </div>
+      </div>
+
+      <div id="map"></div>
+    </div>
+  </div>
+
+  <script src="app.js"></script>
+</body>
+</html>
