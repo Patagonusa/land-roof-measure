@@ -166,6 +166,21 @@ header h1 {
   color: rgba(255,255,255,0.8);
 }
 
+.result-item.total {
+  background: #1a237e;
+  color: white;
+  border-left: 4px solid #0d1642;
+  font-size: 1.1rem;
+}
+
+.result-item.total .label {
+  color: white;
+}
+
+.result-item.total .secondary {
+  color: rgba(255,255,255,0.7);
+}
+
 .pitch-section {
   margin: 15px 0;
   padding: 12px;

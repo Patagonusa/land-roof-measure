@@ -243,11 +243,17 @@ function deleteSelectedPolygon() {
 }
 
 function clearAll() {
+  // Clear all polygons from map
   landPolygons.forEach(p => p.setMap(null));
   roofPolygons.forEach(p => p.setMap(null));
   landPolygons = [];
   roofPolygons = [];
   selectedPolygon = null;
+
+  // Reset drawing mode so user can start fresh
+  currentMode = null;
+  drawingManager.setDrawingMode(null);
+  updateButtonStates();
   updateAreas();
 }
 
@@ -273,6 +279,9 @@ function updateAreas() {
   const adjustedRoofSqFt = roofAreaSqFt * pitchMultiplier;
   const adjustedRoofM2 = roofAreaM2 * pitchMultiplier;
 
+  // Calculate roofing squares (1 square = 100 sq ft)
+  const roofSquares = adjustedRoofSqFt / 100;
+
   // Update display
   document.getElementById('land-area').textContent = formatNumber(landAreaSqFt);
   document.getElementById('land-area-m2').textContent = formatNumber(landAreaM2);
@@ -282,6 +291,7 @@ function updateAreas() {
   document.getElementById('roof-count').textContent = roofPolygons.length;
   document.getElementById('roof-area-adjusted').textContent = formatNumber(adjustedRoofSqFt);
   document.getElementById('roof-area-adjusted-m2').textContent = formatNumber(adjustedRoofM2);
+  document.getElementById('roof-squares').textContent = formatNumber(roofSquares);
 }
 
 function formatNumber(num) {
