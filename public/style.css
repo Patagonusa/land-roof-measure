@@ -202,6 +202,12 @@ header h1 {
   margin-bottom: 4px;
 }
 
+.section-count {
+  font-weight: normal;
+  font-size: 0.8rem;
+  opacity: 0.8;
+}
+
 .result-item .secondary {
   color: #666;
   font-size: 0.85rem;

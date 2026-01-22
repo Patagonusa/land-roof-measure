@@ -4,6 +4,7 @@ let landPolygons = [];
 let roofPolygons = [];
 let currentMode = null;
 let selectedPolygon = null;
+let addressMarker = null;
 
 // Initialize the app
 async function init() {
@@ -131,9 +132,46 @@ async function searchAddress() {
 
     if (data.results && data.results.length > 0) {
       const location = data.results[0].geometry.location;
+      const formattedAddress = data.results[0].formatted_address;
+
       map.setCenter(location);
       map.setZoom(20); // High zoom for property view
       map.setTilt(0); // Top-down view for accurate measurement
+
+      // Remove previous marker if exists
+      if (addressMarker) {
+        addressMarker.setMap(null);
+      }
+
+      // Add marker pin at the address
+      addressMarker = new google.maps.Marker({
+        position: location,
+        map: map,
+        title: formattedAddress,
+        animation: google.maps.Animation.DROP,
+        icon: {
+          path: google.maps.SymbolPath.CIRCLE,
+          scale: 12,
+          fillColor: '#3498db',
+          fillOpacity: 1,
+          strokeColor: '#ffffff',
+          strokeWeight: 3
+        }
+      });
+
+      // Add info window with address
+      const infoWindow = new google.maps.InfoWindow({
+        content: `<div style="font-weight: bold; padding: 5px;">${formattedAddress}</div>`
+      });
+
+      addressMarker.addListener('click', () => {
+        infoWindow.open(map, addressMarker);
+      });
+
+      // Auto-open info window briefly
+      infoWindow.open(map, addressMarker);
+      setTimeout(() => infoWindow.close(), 3000);
+
     } else {
       alert('Address not found. Please try a different address.');
     }
@@ -238,8 +276,10 @@ function updateAreas() {
   // Update display
   document.getElementById('land-area').textContent = formatNumber(landAreaSqFt);
   document.getElementById('land-area-m2').textContent = formatNumber(landAreaM2);
+  document.getElementById('land-count').textContent = landPolygons.length;
   document.getElementById('roof-area').textContent = formatNumber(roofAreaSqFt);
   document.getElementById('roof-area-m2').textContent = formatNumber(roofAreaM2);
+  document.getElementById('roof-count').textContent = roofPolygons.length;
   document.getElementById('roof-area-adjusted').textContent = formatNumber(adjustedRoofSqFt);
   document.getElementById('roof-area-adjusted-m2').textContent = formatNumber(adjustedRoofM2);
 }
