@@ -12,7 +12,7 @@ const supabase = createClient(
   process.env.SUPABASE_ANON_KEY
 );
 
-// Supabase client with service role key (bypasses RLS - for user creation)
+// Supabase client with service role key (bypasses RLS - for user management)
 const supabaseAdmin = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_SERVICE_ROLE_KEY
@@ -105,6 +105,18 @@ app.get('/api/admin/users', async (req, res) => {
 app.post('/api/admin/approve/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
+
+    // Confirm user's email in Supabase Auth
+    const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(userId, {
+      email_confirm: true
+    });
+
+    if (authError) {
+      console.error('Error confirming user email:', authError);
+      throw authError;
+    }
+
+    // Update approved status in users table
     const { data, error } = await supabaseAdmin
       .from('users')
       .update({ approved: true })
