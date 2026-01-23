@@ -3,9 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Roofing - Panel de Administracion</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2327ae60' width='100' height='100' rx='10'/><path fill='white' d='M20 70 L50 30 L80 70 Z'/></svg>">
+  <title>Patagon Consulting - Admin Panel</title>
+  <link rel="icon" href="/logo.jpg">
   <style>
+    /* Patagon Consulting Brand Colors */
+    :root {
+      --deep-navy: #0A1628;
+      --mountain-blue: #1E3A5F;
+      --royal-blue: #2563EB;
+      --sky-blue: #3B82F6;
+      --light-azure: #60A5FA;
+      --ice-blue: #93C5FD;
+      --cloud-white: #F0F9FF;
+      --pure-white: #FFFFFF;
+    }
+
     * {
       margin: 0;
       padding: 0;
@@ -14,21 +26,33 @@
 
     body {
       font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
-      background: #f5f5f5;
+      background: var(--cloud-white);
       min-height: 100vh;
     }
 
     .header {
-      background: #2c3e50;
+      background: linear-gradient(135deg, var(--deep-navy) 0%, var(--mountain-blue) 100%);
       color: white;
-      padding: 15px 30px;
+      padding: 12px 30px;
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
 
+    .header-brand {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+
+    .header-logo {
+      height: 45px;
+      width: auto;
+      border-radius: 6px;
+    }
+
     .header h1 {
-      font-size: 1.4rem;
+      font-size: 1.3rem;
     }
 
     .header-actions {
@@ -39,7 +63,7 @@
 
     .header-actions span {
       font-size: 0.9rem;
-      opacity: 0.9;
+      color: var(--ice-blue);
     }
 
     .btn {
@@ -53,41 +77,43 @@
     }
 
     .btn-primary {
-      background: #3498db;
+      background: linear-gradient(135deg, var(--royal-blue) 0%, var(--sky-blue) 100%);
       color: white;
+      box-shadow: 0 2px 8px rgba(37, 99, 235, 0.3);
     }
 
     .btn-primary:hover {
-      background: #2980b9;
+      background: linear-gradient(135deg, var(--mountain-blue) 0%, var(--royal-blue) 100%);
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.4);
     }
 
     .btn-success {
-      background: #27ae60;
+      background: var(--royal-blue);
       color: white;
     }
 
     .btn-success:hover {
-      background: #219a52;
+      background: var(--mountain-blue);
     }
 
     .btn-danger {
-      background: #e74c3c;
+      background: #dc2626;
       color: white;
     }
 
     .btn-danger:hover {
-      background: #c0392b;
+      background: #b91c1c;
     }
 
     .btn-outline {
       background: transparent;
-      border: 2px solid white;
-      color: white;
+      border: 2px solid var(--light-azure);
+      color: var(--light-azure);
     }
 
     .btn-outline:hover {
-      background: white;
-      color: #2c3e50;
+      background: var(--light-azure);
+      color: var(--deep-navy);
     }
 
     .container {
@@ -129,18 +155,18 @@
     }
 
     .stat.pending {
-      background: #fff3e0;
-      color: #e65100;
+      background: #fef3c7;
+      color: #d97706;
     }
 
     .stat.approved {
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--cloud-white);
+      color: var(--royal-blue);
     }
 
     .stat.total {
-      background: #e3f2fd;
-      color: #1565c0;
+      background: var(--mountain-blue);
+      color: white;
     }
 
     table {
@@ -151,19 +177,19 @@
     th, td {
       padding: 15px 20px;
       text-align: left;
-      border-bottom: 1px solid #eee;
+      border-bottom: 1px solid var(--cloud-white);
     }
 
     th {
-      background: #f8f9fa;
+      background: var(--cloud-white);
       font-weight: 600;
-      color: #666;
+      color: var(--mountain-blue);
       font-size: 0.85rem;
       text-transform: uppercase;
     }
 
     td {
-      color: #333;
+      color: var(--deep-navy);
     }
 
     .status {
@@ -174,18 +200,18 @@
     }
 
     .status.pending {
-      background: #fff3e0;
-      color: #e65100;
+      background: #fef3c7;
+      color: #d97706;
     }
 
     .status.approved {
-      background: #e8f5e9;
-      color: #2e7d32;
+      background: var(--cloud-white);
+      color: var(--royal-blue);
     }
 
     .status.admin {
-      background: #e3f2fd;
-      color: #1565c0;
+      background: var(--mountain-blue);
+      color: white;
     }
 
     .actions {
@@ -229,7 +255,10 @@
 </head>
 <body>
   <div class="header">
-    <h1>Panel de Administracion - Roofing</h1>
+    <div class="header-brand">
+      <img src="/logo.jpg" alt="Patagon Consulting" class="header-logo">
+      <h1>Admin Panel</h1>
+    </div>
     <div class="header-actions">
       <span id="admin-email"></span>
       <button class="btn btn-primary" onclick="goToApp()">Ir a la App</button>

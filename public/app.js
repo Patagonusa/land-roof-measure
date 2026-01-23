@@ -5,6 +5,17 @@ let roofPolygons = [];
 let currentMode = null;
 let selectedPolygon = null;
 let addressMarker = null;
+let streetViewPanorama = null;
+let streetViewService = null;
+let isStreetViewActive = false;
+
+// Patagon Consulting Brand Colors
+const COLORS = {
+  land: '#2563EB',      // Royal Blue
+  roof: '#1E3A5F',      // Mountain Blue
+  marker: '#3B82F6',    // Sky Blue
+  markerBorder: '#FFFFFF'
+};
 
 // Initialize the app
 async function init() {
@@ -16,14 +27,15 @@ async function init() {
   window.gm_authFailure = function() {
     const mapDiv = document.getElementById('map');
     mapDiv.innerHTML = `
-      <div style="padding: 40px; text-align: center; background: #fff3cd; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
-        <h2 style="color: #856404; margin-bottom: 20px;">Error de API Key de Google Maps</h2>
-        <p style="color: #856404; max-width: 500px; line-height: 1.6;">
+      <div style="padding: 40px; text-align: center; background: #F0F9FF; height: 100%; display: flex; flex-direction: column; justify-content: center; align-items: center;">
+        <h2 style="color: #1E3A5F; margin-bottom: 20px;">Error de API Key de Google Maps</h2>
+        <p style="color: #0A1628; max-width: 500px; line-height: 1.6;">
           La clave API necesita ser configurada en Google Cloud Console:<br><br>
-          1. Ir a <a href="https://console.cloud.google.com/apis/library" target="_blank">Google Cloud Console</a><br>
+          1. Ir a <a href="https://console.cloud.google.com/apis/library" target="_blank" style="color: #2563EB;">Google Cloud Console</a><br>
           2. Habilitar "Maps JavaScript API"<br>
           3. Habilitar "Geocoding API"<br>
-          4. Verificar que las restricciones de la clave permitan este dominio
+          4. Habilitar "Street View Static API"<br>
+          5. Verificar que las restricciones de la clave permitan este dominio
         </p>
       </div>
     `;
@@ -46,6 +58,25 @@ function initMap() {
     tilt: 0
   });
 
+  // Initialize Street View Service
+  streetViewService = new google.maps.StreetViewService();
+
+  // Initialize Street View Panorama
+  streetViewPanorama = new google.maps.StreetViewPanorama(
+    document.getElementById('streetview-container'),
+    {
+      enableCloseButton: false,
+      addressControl: true,
+      linksControl: true,
+      panControl: true,
+      zoomControl: true,
+      fullscreenControl: true
+    }
+  );
+
+  // Link map and street view
+  map.setStreetView(streetViewPanorama);
+
   // Initialize drawing manager
   drawingManager = new google.maps.drawing.DrawingManager({
     drawingMode: null,
@@ -63,14 +94,14 @@ function initMap() {
   google.maps.event.addListener(drawingManager, 'polygoncomplete', function(polygon) {
     if (currentMode === 'land') {
       polygon.setOptions({
-        fillColor: '#27ae60',
-        strokeColor: '#27ae60'
+        fillColor: COLORS.land,
+        strokeColor: COLORS.land
       });
       landPolygons.push(polygon);
     } else if (currentMode === 'roof') {
       polygon.setOptions({
-        fillColor: '#e74c3c',
-        strokeColor: '#e74c3c'
+        fillColor: COLORS.roof,
+        strokeColor: COLORS.roof
       });
       roofPolygons.push(polygon);
     }
@@ -110,6 +141,7 @@ function setupEventListeners() {
   // Tool buttons
   document.getElementById('land-btn').addEventListener('click', () => setDrawingMode('land'));
   document.getElementById('roof-btn').addEventListener('click', () => setDrawingMode('roof'));
+  document.getElementById('streetview-btn').addEventListener('click', toggleStreetView);
   document.getElementById('clear-btn').addEventListener('click', clearAll);
 
   // Pitch selector
@@ -158,16 +190,16 @@ async function searchAddress() {
         icon: {
           path: google.maps.SymbolPath.CIRCLE,
           scale: 12,
-          fillColor: '#3498db',
+          fillColor: COLORS.marker,
           fillOpacity: 1,
-          strokeColor: '#ffffff',
+          strokeColor: COLORS.markerBorder,
           strokeWeight: 3
         }
       });
 
       // Add info window with address
       const infoWindow = new google.maps.InfoWindow({
-        content: `<div style="font-weight: bold; padding: 5px;">${formattedAddress}</div>`
+        content: `<div style="font-weight: bold; padding: 5px; color: #0A1628;">${formattedAddress}</div>`
       });
 
       addressMarker.addListener('click', () => {
@@ -178,6 +210,11 @@ async function searchAddress() {
       infoWindow.open(map, addressMarker);
       setTimeout(() => infoWindow.close(), 3000);
 
+      // Update Street View to this location if active
+      if (isStreetViewActive) {
+        updateStreetView(location);
+      }
+
     } else {
       alert('Direccion no encontrada. Por favor intente con otra direccion.');
     }
@@ -185,6 +222,59 @@ async function searchAddress() {
     console.error('Error de busqueda:', error);
     alert('Error al buscar la direccion. Por favor intente de nuevo.');
   }
+}
+
+function toggleStreetView() {
+  isStreetViewActive = !isStreetViewActive;
+  const streetViewContainer = document.getElementById('streetview-container');
+  const mapContainer = document.getElementById('map');
+  const streetViewBtn = document.getElementById('streetview-btn');
+
+  if (isStreetViewActive) {
+    streetViewContainer.classList.add('active');
+    mapContainer.classList.add('with-streetview');
+    streetViewBtn.classList.add('active');
+
+    // Get current map center for street view
+    const center = map.getCenter();
+    updateStreetView({ lat: center.lat(), lng: center.lng() });
+  } else {
+    streetViewContainer.classList.remove('active');
+    mapContainer.classList.remove('with-streetview');
+    streetViewBtn.classList.remove('active');
+  }
+}
+
+function updateStreetView(location) {
+  if (!streetViewService || !streetViewPanorama) return;
+
+  streetViewService.getPanorama(
+    { location: location, radius: 50 },
+    function(data, status) {
+      if (status === google.maps.StreetViewStatus.OK) {
+        streetViewPanorama.setPano(data.location.pano);
+        streetViewPanorama.setPov({
+          heading: 0,
+          pitch: 0
+        });
+        streetViewPanorama.setVisible(true);
+      } else {
+        console.log('Street View not available for this location');
+        // Show message in street view container
+        const container = document.getElementById('streetview-container');
+        if (isStreetViewActive) {
+          container.innerHTML = `
+            <div style="height: 100%; display: flex; align-items: center; justify-content: center; background: #F0F9FF; color: #1E3A5F; text-align: center; padding: 20px;">
+              <div>
+                <p style="font-size: 1.1rem; font-weight: 600;">Street View no disponible</p>
+                <p style="font-size: 0.9rem; margin-top: 10px; color: #60A5FA;">No hay cobertura de Street View para esta ubicacion.</p>
+              </div>
+            </div>
+          `;
+        }
+      }
+    }
+  );
 }
 
 function setDrawingMode(mode) {
@@ -199,11 +289,11 @@ function setDrawingMode(mode) {
   };
 
   if (mode === 'land') {
-    options.fillColor = '#27ae60';
-    options.strokeColor = '#27ae60';
+    options.fillColor = COLORS.land;
+    options.strokeColor = COLORS.land;
   } else if (mode === 'roof') {
-    options.fillColor = '#e74c3c';
-    options.strokeColor = '#e74c3c';
+    options.fillColor = COLORS.roof;
+    options.strokeColor = COLORS.roof;
   }
 
   drawingManager.setOptions({ polygonOptions: options });

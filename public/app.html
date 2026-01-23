@@ -3,14 +3,17 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Medidor de Terreno y Techo</title>
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect fill='%2327ae60' width='100' height='100' rx='10'/><path fill='white' d='M20 70 L50 30 L80 70 Z'/></svg>">
+  <title>Patagon Consulting - Roofing Measure</title>
+  <link rel="icon" href="/logo.jpg">
   <link rel="stylesheet" href="style.css">
 </head>
 <body>
   <div class="container">
     <header>
-      <h1>Medidor de Terreno y Techo</h1>
+      <div class="header-brand">
+        <img src="/logo.jpg" alt="Patagon Consulting" class="header-logo">
+        <h1>Roofing Measure</h1>
+      </div>
       <div class="header-actions">
         <span id="user-email"></span>
         <button id="admin-link" class="header-btn" style="display:none;" onclick="window.location.href='/admin'">Admin</button>
@@ -28,6 +31,7 @@
         <h3>Herramientas de Dibujo</h3>
         <button id="land-btn" class="tool-btn land">Medir Terreno</button>
         <button id="roof-btn" class="tool-btn roof">Medir Techo</button>
+        <button id="streetview-btn" class="tool-btn streetview">Street View</button>
         <button id="clear-btn" class="tool-btn clear">Borrar Todo</button>
 
         <div class="results">
@@ -88,6 +92,7 @@
       </div>
 
       <div id="map"></div>
+      <div id="streetview-container"></div>
     </div>
   </div>
 
