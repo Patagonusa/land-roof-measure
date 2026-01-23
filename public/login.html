@@ -314,18 +314,19 @@
 
         if (authError) throw authError;
 
-        // Create user record in users table
-        const { error: userError } = await supabaseClient
-          .from('users')
-          .insert({
-            id: authData.user.id,
+        // Create user record via backend API (bypasses RLS)
+        const response = await fetch('/api/signup', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({
+            userId: authData.user.id,
             email: email,
-            name: name,
-            approved: false,
-            is_admin: false
-          });
+            name: name
+          })
+        });
 
-        if (userError) throw userError;
+        const result = await response.json();
+        if (!response.ok) throw new Error(result.error || 'Error creating user record');
 
         showMessage(messageEl, 'Cuenta creada exitosamente. Un administrador debe aprobar tu cuenta antes de que puedas acceder.', 'success');
         btn.textContent = 'Cuenta Creada';

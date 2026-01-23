@@ -6,10 +6,16 @@ require('dotenv').config();
 const app = express();
 const PORT = process.env.PORT || 3000;
 
-// Supabase client
+// Supabase client with anon key (for general queries)
 const supabase = createClient(
   process.env.SUPABASE_URL,
   process.env.SUPABASE_ANON_KEY
+);
+
+// Supabase client with service role key (bypasses RLS - for user creation)
+const supabaseAdmin = createClient(
+  process.env.SUPABASE_URL,
+  process.env.SUPABASE_SERVICE_ROLE_KEY
 );
 
 // Middleware
@@ -23,6 +29,38 @@ app.get('/api/config', (req, res) => {
     supabaseUrl: process.env.SUPABASE_URL,
     supabaseAnonKey: process.env.SUPABASE_ANON_KEY
   });
+});
+
+// Signup endpoint - creates user record using service role (bypasses RLS)
+app.post('/api/signup', async (req, res) => {
+  try {
+    const { userId, email, name } = req.body;
+
+    if (!userId || !email || !name) {
+      return res.status(400).json({ error: 'Missing required fields' });
+    }
+
+    // Insert user record using admin client (bypasses RLS)
+    const { error } = await supabaseAdmin
+      .from('users')
+      .insert({
+        id: userId,
+        email: email,
+        name: name,
+        approved: false,
+        is_admin: false
+      });
+
+    if (error) {
+      console.error('Error creating user record:', error);
+      return res.status(500).json({ error: error.message });
+    }
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Signup error:', error);
+    res.status(500).json({ error: 'Failed to create user record' });
+  }
 });
 
 // Geocoding proxy endpoint
@@ -50,7 +88,7 @@ app.get('/api/geocode', async (req, res) => {
 // Get all users (admin only)
 app.get('/api/admin/users', async (req, res) => {
   try {
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .select('*')
       .order('created_at', { ascending: false });
@@ -67,7 +105,7 @@ app.get('/api/admin/users', async (req, res) => {
 app.post('/api/admin/approve/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { data, error } = await supabase
+    const { data, error } = await supabaseAdmin
       .from('users')
       .update({ approved: true })
       .eq('id', userId)
@@ -85,7 +123,7 @@ app.post('/api/admin/approve/:userId', async (req, res) => {
 app.delete('/api/admin/users/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-    const { error } = await supabase
+    const { error } = await supabaseAdmin
       .from('users')
       .delete()
       .eq('id', userId);
