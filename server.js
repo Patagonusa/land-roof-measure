@@ -3,8 +3,13 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const multer = require('multer');
 const OpenAI = require('openai');
-const { HfInference } = require('@huggingface/inference');
+const { fal } = require('@fal-ai/client');
 require('dotenv').config();
+
+// Configure fal.ai
+fal.config({
+  credentials: process.env.FAL_KEY
+});
 
 // Configure multer for memory storage
 const upload = multer({
@@ -24,8 +29,6 @@ const openai = new OpenAI({
   apiKey: process.env.OPENAI_API_KEY
 });
 
-// Initialize Hugging Face
-const hf = new HfInference(process.env.HUGGINGFACE_API_TOKEN);
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -241,37 +244,32 @@ app.post('/api/visualize', async (req, res) => {
     console.log('Starting visualization with prompt:', prompt);
     console.log('Image URL:', imageUrl);
 
-    // Download the original image
-    const imageResponse = await fetch(imageUrl);
-    if (!imageResponse.ok) {
-      throw new Error(`Failed to fetch image: ${imageResponse.status}`);
-    }
-    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+    // Use fal.ai FLUX image-to-image API
+    console.log('Sending to fal.ai FLUX image-to-image...');
 
-    console.log('Image downloaded, size:', imageBuffer.length);
-
-    // Use HuggingFace Inference library for image-to-image
-    console.log('Sending to HuggingFace InstructPix2Pix via inference library...');
-
-    // Create a Blob from the buffer for the HF inference library
-    const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
-
-    const result = await hf.imageToImage({
-      model: 'timbrooks/instruct-pix2pix',
-      inputs: imageBlob,
-      parameters: {
+    const result = await fal.subscribe('fal-ai/flux/dev/image-to-image', {
+      input: {
+        image_url: imageUrl,
         prompt: prompt,
-        guidance_scale: 7.5,
-        image_guidance_scale: 1.5,
-        num_inference_steps: 30
+        strength: 0.75,
+        num_inference_steps: 28,
+        guidance_scale: 3.5,
+        num_images: 1,
+        output_format: 'jpeg'
       }
     });
 
-    console.log('HuggingFace result received successfully');
+    console.log('fal.ai result received successfully');
 
-    // Convert the result Blob to Buffer
-    const resultArrayBuffer = await result.arrayBuffer();
-    const resultBuffer = Buffer.from(resultArrayBuffer);
+    // Get the generated image URL from fal.ai
+    const generatedUrl = result.data.images[0].url;
+
+    // Download the generated image to store in Supabase
+    const generatedResponse = await fetch(generatedUrl);
+    if (!generatedResponse.ok) {
+      throw new Error(`Failed to download generated image: ${generatedResponse.status}`);
+    }
+    const resultBuffer = Buffer.from(await generatedResponse.arrayBuffer());
 
     // Store the generated image in Supabase
     const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
