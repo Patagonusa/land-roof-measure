@@ -28,54 +28,200 @@
 
     <div class="main-content">
       <div class="controls">
-        <h3>Herramientas de Dibujo</h3>
-        <button id="land-btn" class="tool-btn land">Medir Terreno</button>
-        <button id="roof-btn" class="tool-btn roof">Medir Techo</button>
-        <button id="streetview-btn" class="tool-btn streetview">Street View</button>
-        <button id="clear-btn" class="tool-btn clear">Borrar Todo</button>
+        <!-- Tab Navigation -->
+        <div class="tab-navigation">
+          <button class="tab-btn active" data-tab="tools">Mediciones</button>
+          <button class="tab-btn" data-tab="visualizer">Visualizador</button>
+        </div>
 
-        <div class="results">
-          <h3>Mediciones</h3>
-          <div class="result-item land">
-            <span class="label">Area del Terreno <span class="section-count">(<span id="land-count">0</span> secciones)</span></span>
-            <span id="land-area">0</span> sq ft
-            <span class="secondary">(<span id="land-area-m2">0</span> m²)</span>
+        <!-- Tools Tab Content -->
+        <div class="tab-content active" id="tools-tab">
+          <h3>Herramientas de Dibujo</h3>
+          <button id="land-btn" class="tool-btn land">Medir Terreno</button>
+          <button id="roof-btn" class="tool-btn roof">Medir Techo</button>
+          <button id="streetview-btn" class="tool-btn streetview">Street View</button>
+          <button id="clear-btn" class="tool-btn clear">Borrar Todo</button>
+
+          <div class="results">
+            <h3>Mediciones</h3>
+            <div class="result-item land">
+              <span class="label">Area del Terreno <span class="section-count">(<span id="land-count">0</span> secciones)</span></span>
+              <span id="land-area">0</span> sq ft
+              <span class="secondary">(<span id="land-area-m2">0</span> m²)</span>
+            </div>
+            <div class="result-item roof">
+              <span class="label">Huella del Techo <span class="section-count">(<span id="roof-count">0</span> secciones)</span></span>
+              <span id="roof-area">0</span> sq ft
+              <span class="secondary">(<span id="roof-area-m2">0</span> m²)</span>
+            </div>
+
+            <div class="pitch-section">
+              <label for="roof-pitch">Pendiente del Techo:</label>
+              <select id="roof-pitch">
+                <option value="1.000">Plano (0/12)</option>
+                <option value="1.014">1/12</option>
+                <option value="1.027">2/12</option>
+                <option value="1.041">3/12</option>
+                <option value="1.054">4/12</option>
+                <option value="1.068">5/12</option>
+                <option value="1.118" selected>6/12 (Comun)</option>
+                <option value="1.138">7/12</option>
+                <option value="1.202">8/12</option>
+                <option value="1.250">9/12</option>
+                <option value="1.302">10/12</option>
+                <option value="1.357">11/12</option>
+                <option value="1.414">12/12</option>
+              </select>
+            </div>
+
+            <div class="result-item roof adjusted">
+              <span class="label">Area Real del Techo:</span>
+              <span id="roof-area-adjusted">0</span> sq ft
+              <span class="secondary">(<span id="roof-area-adjusted-m2">0</span> m²)</span>
+            </div>
+
+            <div class="result-item total">
+              <span class="label">Escuadras de Techo:</span>
+              <span id="roof-squares">0</span> escuadras
+              <span class="secondary">(1 escuadra = 100 sq ft)</span>
+            </div>
           </div>
-          <div class="result-item roof">
-            <span class="label">Huella del Techo <span class="section-count">(<span id="roof-count">0</span> secciones)</span></span>
-            <span id="roof-area">0</span> sq ft
-            <span class="secondary">(<span id="roof-area-m2">0</span> m²)</span>
+        </div>
+
+        <!-- Visualizer Tab Content -->
+        <div class="tab-content" id="visualizer-tab">
+          <h3>Visualizador de Hogar</h3>
+
+          <!-- Image Upload Area -->
+          <div class="upload-area" id="upload-area">
+            <div class="upload-icon">📷</div>
+            <p>Arrastra una imagen aqui o</p>
+            <label class="upload-btn">
+              Seleccionar Archivo
+              <input type="file" id="image-input" accept="image/*" hidden>
+            </label>
           </div>
 
-          <div class="pitch-section">
-            <label for="roof-pitch">Pendiente del Techo:</label>
-            <select id="roof-pitch">
-              <option value="1.000">Plano (0/12)</option>
-              <option value="1.014">1/12</option>
-              <option value="1.027">2/12</option>
-              <option value="1.041">3/12</option>
-              <option value="1.054">4/12</option>
-              <option value="1.068">5/12</option>
-              <option value="1.118" selected>6/12 (Comun)</option>
-              <option value="1.138">7/12</option>
-              <option value="1.202">8/12</option>
-              <option value="1.250">9/12</option>
-              <option value="1.302">10/12</option>
-              <option value="1.357">11/12</option>
-              <option value="1.414">12/12</option>
-            </select>
+          <!-- Image Preview -->
+          <div class="image-preview" id="image-preview" style="display: none;">
+            <img id="preview-img" src="" alt="Preview">
+            <button class="remove-image-btn" id="remove-image">✕</button>
           </div>
 
-          <div class="result-item roof adjusted">
-            <span class="label">Area Real del Techo:</span>
-            <span id="roof-area-adjusted">0</span> sq ft
-            <span class="secondary">(<span id="roof-area-adjusted-m2">0</span> m²)</span>
+          <!-- Visualization Type -->
+          <div class="viz-section">
+            <h4>Tipo de Visualizacion</h4>
+            <div class="viz-type-options">
+              <label class="viz-radio">
+                <input type="radio" name="viz-type" value="paint" checked>
+                <span class="viz-radio-label">🎨 Pintura</span>
+              </label>
+              <label class="viz-radio">
+                <input type="radio" name="viz-type" value="fence">
+                <span class="viz-radio-label">🏗️ Cercas</span>
+              </label>
+              <label class="viz-radio">
+                <input type="radio" name="viz-type" value="roof">
+                <span class="viz-radio-label">🏠 Techo</span>
+              </label>
+            </div>
           </div>
 
-          <div class="result-item total">
-            <span class="label">Escuadras de Techo:</span>
-            <span id="roof-squares">0</span> escuadras
-            <span class="secondary">(1 escuadra = 100 sq ft)</span>
+          <!-- Paint Options -->
+          <div class="viz-options" id="paint-options">
+            <h4>Color de Pintura</h4>
+            <div class="color-grid">
+              <button class="color-swatch selected" data-color="white" style="background: #FFFFFF;" title="Blanco"></button>
+              <button class="color-swatch" data-color="cream" style="background: #FFFDD0;" title="Crema"></button>
+              <button class="color-swatch" data-color="beige" style="background: #F5F5DC;" title="Beige"></button>
+              <button class="color-swatch" data-color="light gray" style="background: #D3D3D3;" title="Gris Claro"></button>
+              <button class="color-swatch" data-color="dark gray" style="background: #696969;" title="Gris Oscuro"></button>
+              <button class="color-swatch" data-color="light blue" style="background: #ADD8E6;" title="Azul Claro"></button>
+              <button class="color-swatch" data-color="navy blue" style="background: #000080;" title="Azul Marino"></button>
+              <button class="color-swatch" data-color="sage green" style="background: #9DC183;" title="Verde Salvia"></button>
+              <button class="color-swatch" data-color="forest green" style="background: #228B22;" title="Verde Bosque"></button>
+              <button class="color-swatch" data-color="pale yellow" style="background: #FFFFE0;" title="Amarillo Palido"></button>
+              <button class="color-swatch" data-color="terracotta" style="background: #E2725B;" title="Terracota"></button>
+              <button class="color-swatch" data-color="burgundy" style="background: #800020;" title="Burdeos"></button>
+            </div>
+          </div>
+
+          <!-- Fence Options -->
+          <div class="viz-options" id="fence-options" style="display: none;">
+            <h4>Tipo de Cerca</h4>
+            <div class="fence-grid">
+              <button class="fence-option selected" data-material="vinyl" data-style="white">
+                <span class="fence-icon">◻️</span>
+                <span>Vinilo Blanco</span>
+              </button>
+              <button class="fence-option" data-material="vinyl" data-style="tan">
+                <span class="fence-icon">🟫</span>
+                <span>Vinilo Tan</span>
+              </button>
+              <button class="fence-option" data-material="wood" data-style="natural cedar">
+                <span class="fence-icon">🪵</span>
+                <span>Madera Natural</span>
+              </button>
+              <button class="fence-option" data-material="wood" data-style="dark stained">
+                <span class="fence-icon">🟤</span>
+                <span>Madera Tenida</span>
+              </button>
+              <button class="fence-option" data-material="wood" data-style="white painted">
+                <span class="fence-icon">🤍</span>
+                <span>Madera Blanca</span>
+              </button>
+              <button class="fence-option" data-material="metal" data-style="black wrought iron">
+                <span class="fence-icon">⬛</span>
+                <span>Metal Negro</span>
+              </button>
+              <button class="fence-option" data-material="metal" data-style="bronze">
+                <span class="fence-icon">🟫</span>
+                <span>Metal Bronce</span>
+              </button>
+              <button class="fence-option" data-material="chain link" data-style="silver galvanized">
+                <span class="fence-icon">⛓️</span>
+                <span>Malla Ciclonica</span>
+              </button>
+            </div>
+          </div>
+
+          <!-- Roof Options -->
+          <div class="viz-options" id="roof-options" style="display: none;">
+            <h4>Color de Tejas</h4>
+            <div class="color-grid">
+              <button class="color-swatch selected" data-color="charcoal gray" style="background: #36454F;" title="Gris Carbon"></button>
+              <button class="color-swatch" data-color="black" style="background: #1a1a1a;" title="Negro"></button>
+              <button class="color-swatch" data-color="dark brown" style="background: #5C4033;" title="Marron Oscuro"></button>
+              <button class="color-swatch" data-color="weathered wood brown" style="background: #8B7355;" title="Madera Envejecida"></button>
+              <button class="color-swatch" data-color="slate gray" style="background: #708090;" title="Gris Pizarra"></button>
+              <button class="color-swatch" data-color="terracotta red" style="background: #C04000;" title="Terracota"></button>
+              <button class="color-swatch" data-color="forest green" style="background: #228B22;" title="Verde Bosque"></button>
+              <button class="color-swatch" data-color="desert tan" style="background: #C19A6B;" title="Tan Desierto"></button>
+            </div>
+          </div>
+
+          <!-- Generate Button -->
+          <button class="generate-btn" id="generate-btn" disabled>
+            <span class="generate-text">Generar Visualizacion</span>
+            <span class="generate-loading" style="display: none;">
+              <span class="spinner"></span> Generando...
+            </span>
+          </button>
+
+          <!-- Results Area -->
+          <div class="viz-results" id="viz-results" style="display: none;">
+            <h4>Resultado</h4>
+            <div class="results-grid">
+              <div class="result-card">
+                <span class="result-label">Original</span>
+                <img id="result-original" src="" alt="Original">
+              </div>
+              <div class="result-card">
+                <span class="result-label">Visualizacion</span>
+                <img id="result-generated" src="" alt="Generated">
+              </div>
+            </div>
+            <button class="download-btn" id="download-btn">📥 Descargar Resultado</button>
           </div>
         </div>
 

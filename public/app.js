@@ -407,3 +407,321 @@ function formatNumber(num) {
 
 // Start the app
 init();
+
+// ============================================
+// VISUALIZER FUNCTIONALITY
+// ============================================
+
+let uploadedImageUrl = null;
+let selectedVizType = 'paint';
+let selectedPaintColor = 'white';
+let selectedFenceMaterial = 'vinyl';
+let selectedFenceStyle = 'white';
+let selectedRoofColor = 'charcoal gray';
+let generatedImageUrl = null;
+
+// Initialize visualizer when DOM is ready
+document.addEventListener('DOMContentLoaded', function() {
+  setupTabNavigation();
+  setupVisualizerEvents();
+});
+
+// Tab Navigation
+function setupTabNavigation() {
+  const tabBtns = document.querySelectorAll('.tab-navigation .tab-btn');
+
+  tabBtns.forEach(btn => {
+    btn.addEventListener('click', function() {
+      const tabId = this.dataset.tab;
+
+      // Update active tab button
+      tabBtns.forEach(b => b.classList.remove('active'));
+      this.classList.add('active');
+
+      // Show corresponding tab content
+      document.querySelectorAll('.tab-content').forEach(content => {
+        content.classList.remove('active');
+      });
+
+      const targetTab = document.getElementById(`${tabId}-tab`);
+      if (targetTab) {
+        targetTab.classList.add('active');
+      }
+    });
+  });
+}
+
+// Visualizer Event Handlers
+function setupVisualizerEvents() {
+  // Image upload via file input
+  const imageInput = document.getElementById('image-input');
+  if (imageInput) {
+    imageInput.addEventListener('change', handleImageSelect);
+  }
+
+  // Drag and drop
+  const uploadArea = document.getElementById('upload-area');
+  if (uploadArea) {
+    uploadArea.addEventListener('dragover', handleDragOver);
+    uploadArea.addEventListener('dragleave', handleDragLeave);
+    uploadArea.addEventListener('drop', handleDrop);
+  }
+
+  // Remove image button
+  const removeBtn = document.getElementById('remove-image');
+  if (removeBtn) {
+    removeBtn.addEventListener('click', removeImage);
+  }
+
+  // Visualization type radio buttons
+  const vizTypeRadios = document.querySelectorAll('input[name="viz-type"]');
+  vizTypeRadios.forEach(radio => {
+    radio.addEventListener('change', handleVizTypeChange);
+  });
+
+  // Paint color swatches
+  const paintSwatches = document.querySelectorAll('#paint-options .color-swatch');
+  paintSwatches.forEach(swatch => {
+    swatch.addEventListener('click', function() {
+      paintSwatches.forEach(s => s.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedPaintColor = this.dataset.color;
+    });
+  });
+
+  // Fence options
+  const fenceOptions = document.querySelectorAll('.fence-option');
+  fenceOptions.forEach(option => {
+    option.addEventListener('click', function() {
+      fenceOptions.forEach(o => o.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedFenceMaterial = this.dataset.material;
+      selectedFenceStyle = this.dataset.style;
+    });
+  });
+
+  // Roof color swatches
+  const roofSwatches = document.querySelectorAll('#roof-options .color-swatch');
+  roofSwatches.forEach(swatch => {
+    swatch.addEventListener('click', function() {
+      roofSwatches.forEach(s => s.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedRoofColor = this.dataset.color;
+    });
+  });
+
+  // Generate button
+  const generateBtn = document.getElementById('generate-btn');
+  if (generateBtn) {
+    generateBtn.addEventListener('click', generateVisualization);
+  }
+
+  // Download button
+  const downloadBtn = document.getElementById('download-btn');
+  if (downloadBtn) {
+    downloadBtn.addEventListener('click', downloadResult);
+  }
+}
+
+// Handle drag over
+function handleDragOver(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  this.classList.add('dragover');
+}
+
+// Handle drag leave
+function handleDragLeave(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  this.classList.remove('dragover');
+}
+
+// Handle drop
+function handleDrop(e) {
+  e.preventDefault();
+  e.stopPropagation();
+  this.classList.remove('dragover');
+
+  const files = e.dataTransfer.files;
+  if (files.length > 0 && files[0].type.startsWith('image/')) {
+    uploadImage(files[0]);
+  }
+}
+
+// Handle file select
+function handleImageSelect(e) {
+  const files = e.target.files;
+  if (files.length > 0) {
+    uploadImage(files[0]);
+  }
+}
+
+// Upload image to server
+async function uploadImage(file) {
+  const uploadArea = document.getElementById('upload-area');
+  const imagePreview = document.getElementById('image-preview');
+  const previewImg = document.getElementById('preview-img');
+  const generateBtn = document.getElementById('generate-btn');
+
+  // Show loading state
+  uploadArea.innerHTML = '<div class="upload-icon">⏳</div><p>Subiendo imagen...</p>';
+
+  try {
+    const formData = new FormData();
+    formData.append('image', file);
+
+    const response = await fetch('/api/upload-image', {
+      method: 'POST',
+      body: formData
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      uploadedImageUrl = result.url;
+
+      // Show preview
+      previewImg.src = uploadedImageUrl;
+      uploadArea.style.display = 'none';
+      imagePreview.style.display = 'block';
+
+      // Enable generate button
+      generateBtn.disabled = false;
+    } else {
+      throw new Error(result.error || 'Upload failed');
+    }
+  } catch (error) {
+    console.error('Upload error:', error);
+    alert('Error al subir la imagen. Por favor intente de nuevo.');
+
+    // Reset upload area
+    uploadArea.innerHTML = `
+      <div class="upload-icon">📷</div>
+      <p>Arrastra una imagen aqui o</p>
+      <label class="upload-btn">
+        Seleccionar Archivo
+        <input type="file" id="image-input" accept="image/*" hidden>
+      </label>
+    `;
+    document.getElementById('image-input').addEventListener('change', handleImageSelect);
+  }
+}
+
+// Remove uploaded image
+function removeImage() {
+  uploadedImageUrl = null;
+  generatedImageUrl = null;
+
+  const uploadArea = document.getElementById('upload-area');
+  const imagePreview = document.getElementById('image-preview');
+  const generateBtn = document.getElementById('generate-btn');
+  const vizResults = document.getElementById('viz-results');
+
+  // Reset upload area
+  uploadArea.style.display = 'block';
+  uploadArea.innerHTML = `
+    <div class="upload-icon">📷</div>
+    <p>Arrastra una imagen aqui o</p>
+    <label class="upload-btn">
+      Seleccionar Archivo
+      <input type="file" id="image-input" accept="image/*" hidden>
+    </label>
+  `;
+  document.getElementById('image-input').addEventListener('change', handleImageSelect);
+
+  // Hide preview and results
+  imagePreview.style.display = 'none';
+  vizResults.style.display = 'none';
+
+  // Disable generate button
+  generateBtn.disabled = true;
+}
+
+// Handle visualization type change
+function handleVizTypeChange(e) {
+  selectedVizType = e.target.value;
+
+  // Show/hide appropriate options
+  document.getElementById('paint-options').style.display = selectedVizType === 'paint' ? 'block' : 'none';
+  document.getElementById('fence-options').style.display = selectedVizType === 'fence' ? 'block' : 'none';
+  document.getElementById('roof-options').style.display = selectedVizType === 'roof' ? 'block' : 'none';
+}
+
+// Generate visualization
+async function generateVisualization() {
+  if (!uploadedImageUrl) {
+    alert('Por favor suba una imagen primero.');
+    return;
+  }
+
+  const generateBtn = document.getElementById('generate-btn');
+  const generateText = generateBtn.querySelector('.generate-text');
+  const generateLoading = generateBtn.querySelector('.generate-loading');
+
+  // Show loading state
+  generateBtn.disabled = true;
+  generateText.style.display = 'none';
+  generateLoading.style.display = 'flex';
+
+  try {
+    // Build options based on type
+    let options = {};
+
+    if (selectedVizType === 'paint') {
+      options = { color: selectedPaintColor };
+    } else if (selectedVizType === 'fence') {
+      options = { material: selectedFenceMaterial, style: selectedFenceStyle };
+    } else if (selectedVizType === 'roof') {
+      options = { color: selectedRoofColor };
+    }
+
+    const response = await fetch('/api/visualize', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        imageUrl: uploadedImageUrl,
+        type: selectedVizType,
+        options: options
+      })
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      generatedImageUrl = result.generatedUrl;
+
+      // Show results
+      document.getElementById('result-original').src = uploadedImageUrl;
+      document.getElementById('result-generated').src = generatedImageUrl;
+      document.getElementById('viz-results').style.display = 'block';
+
+      // Scroll to results
+      document.getElementById('viz-results').scrollIntoView({ behavior: 'smooth' });
+    } else {
+      throw new Error(result.error || 'Generation failed');
+    }
+  } catch (error) {
+    console.error('Visualization error:', error);
+    alert('Error al generar la visualizacion: ' + error.message);
+  } finally {
+    // Reset button state
+    generateBtn.disabled = false;
+    generateText.style.display = 'inline';
+    generateLoading.style.display = 'none';
+  }
+}
+
+// Download generated result
+function downloadResult() {
+  if (!generatedImageUrl) return;
+
+  // Create a temporary link and trigger download
+  const link = document.createElement('a');
+  link.href = generatedImageUrl;
+  link.download = `visualizacion-${Date.now()}.png`;
+  link.target = '_blank';
+  document.body.appendChild(link);
+  link.click();
+  document.body.removeChild(link);
+}

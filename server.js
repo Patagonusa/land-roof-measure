@@ -1,7 +1,27 @@
 const express = require('express');
 const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
+const multer = require('multer');
+const OpenAI = require('openai');
 require('dotenv').config();
+
+// Configure multer for memory storage
+const upload = multer({
+  storage: multer.memoryStorage(),
+  limits: { fileSize: 10 * 1024 * 1024 }, // 10MB limit
+  fileFilter: (req, file, cb) => {
+    if (file.mimetype.startsWith('image/')) {
+      cb(null, true);
+    } else {
+      cb(new Error('Only image files are allowed'), false);
+    }
+  }
+});
+
+// Initialize OpenAI
+const openai = new OpenAI({
+  apiKey: process.env.OPENAI_API_KEY
+});
 
 const app = express();
 const PORT = process.env.PORT || 3000;
@@ -145,6 +165,167 @@ app.delete('/api/admin/users/:userId', async (req, res) => {
   } catch (error) {
     console.error('Error deleting user:', error);
     res.status(500).json({ error: 'Failed to delete user' });
+  }
+});
+
+// ============================================
+// VISUALIZER ENDPOINTS
+// ============================================
+
+// Upload image to Supabase Storage
+app.post('/api/upload-image', upload.single('image'), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ error: 'No image file provided' });
+    }
+
+    const file = req.file;
+    const fileName = `${Date.now()}-${Math.random().toString(36).substring(7)}.${file.mimetype.split('/')[1]}`;
+    const filePath = `uploads/${fileName}`;
+
+    // Upload to Supabase Storage
+    const { data, error } = await supabaseAdmin.storage
+      .from('visualizer-images')
+      .upload(filePath, file.buffer, {
+        contentType: file.mimetype,
+        upsert: false
+      });
+
+    if (error) {
+      console.error('Supabase storage error:', error);
+      throw error;
+    }
+
+    // Get public URL
+    const { data: urlData } = supabaseAdmin.storage
+      .from('visualizer-images')
+      .getPublicUrl(filePath);
+
+    res.json({
+      success: true,
+      url: urlData.publicUrl,
+      path: filePath
+    });
+  } catch (error) {
+    console.error('Upload error:', error);
+    res.status(500).json({ error: 'Failed to upload image' });
+  }
+});
+
+// Generate AI visualization
+app.post('/api/visualize', async (req, res) => {
+  try {
+    const { imageUrl, type, options } = req.body;
+
+    if (!imageUrl || !type || !options) {
+      return res.status(400).json({ error: 'Missing required fields: imageUrl, type, options' });
+    }
+
+    // Build the prompt based on visualization type
+    let prompt = '';
+
+    if (type === 'paint') {
+      prompt = `Transform this house/building image by changing the exterior paint color to ${options.color}.
+        Keep all other elements exactly the same (windows, doors, roof, landscaping, etc.).
+        The new paint color should look realistic and professionally applied.
+        Maintain the same lighting, shadows, and perspective.`;
+    } else if (type === 'fence') {
+      prompt = `Add or replace the fence in this property image with a ${options.material} ${options.style} fence.
+        The fence should look realistic and professionally installed.
+        Keep all other elements of the image exactly the same.
+        Maintain the same lighting, shadows, and perspective.`;
+    } else if (type === 'roof') {
+      prompt = `Transform this house image by changing the roof shingles to ${options.color} colored shingles.
+        Keep all other elements exactly the same (walls, windows, doors, landscaping, etc.).
+        The new roof should look realistic with proper texture and shadows.
+        Maintain the same lighting and perspective.`;
+    } else {
+      return res.status(400).json({ error: 'Invalid visualization type. Use: paint, fence, or roof' });
+    }
+
+    // First, analyze the image with GPT-4 Vision to understand it better
+    const analysisResponse = await openai.chat.completions.create({
+      model: 'gpt-4o',
+      messages: [
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Analyze this house/property image and describe it in detail for image generation purposes.
+                     Focus on: architectural style, current colors, materials, landscaping, lighting conditions, and camera angle.
+                     Keep the description concise but detailed enough to recreate the image with modifications.`
+            },
+            {
+              type: 'image_url',
+              image_url: { url: imageUrl }
+            }
+          ]
+        }
+      ],
+      max_tokens: 500
+    });
+
+    const imageDescription = analysisResponse.choices[0].message.content;
+
+    // Generate the new image with DALL-E 3
+    const generationPrompt = `${imageDescription}\n\nNow, ${prompt}\n\nCreate a photorealistic image that looks like a real photograph.`;
+
+    const imageResponse = await openai.images.generate({
+      model: 'dall-e-3',
+      prompt: generationPrompt,
+      n: 1,
+      size: '1024x1024',
+      quality: 'standard',
+      style: 'natural'
+    });
+
+    const generatedImageUrl = imageResponse.data[0].url;
+
+    // Download and store the generated image in Supabase
+    const imageData = await fetch(generatedImageUrl);
+    const imageBuffer = Buffer.from(await imageData.arrayBuffer());
+
+    const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.png`;
+
+    const { error: uploadError } = await supabaseAdmin.storage
+      .from('visualizer-images')
+      .upload(fileName, imageBuffer, {
+        contentType: 'image/png',
+        upsert: false
+      });
+
+    if (uploadError) {
+      console.error('Error storing generated image:', uploadError);
+      // Return the temporary URL if storage fails
+      return res.json({
+        success: true,
+        originalUrl: imageUrl,
+        generatedUrl: generatedImageUrl,
+        description: imageDescription,
+        temporary: true
+      });
+    }
+
+    // Get permanent public URL
+    const { data: urlData } = supabaseAdmin.storage
+      .from('visualizer-images')
+      .getPublicUrl(fileName);
+
+    res.json({
+      success: true,
+      originalUrl: imageUrl,
+      generatedUrl: urlData.publicUrl,
+      description: imageDescription,
+      temporary: false
+    });
+
+  } catch (error) {
+    console.error('Visualization error:', error);
+    res.status(500).json({
+      error: 'Failed to generate visualization',
+      details: error.message
+    });
   }
 });
 
