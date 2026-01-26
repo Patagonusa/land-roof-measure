@@ -429,6 +429,7 @@ document.addEventListener('DOMContentLoaded', function() {
 // Tab Navigation
 function setupTabNavigation() {
   const tabBtns = document.querySelectorAll('.tab-navigation .tab-btn');
+  const mainContent = document.querySelector('.main-content');
 
   tabBtns.forEach(btn => {
     btn.addEventListener('click', function() {
@@ -446,6 +447,13 @@ function setupTabNavigation() {
       const targetTab = document.getElementById(`${tabId}-tab`);
       if (targetTab) {
         targetTab.classList.add('active');
+      }
+
+      // Toggle visualizer mode (hides map, expands interface)
+      if (tabId === 'visualizer') {
+        mainContent.classList.add('visualizer-mode');
+      } else {
+        mainContent.classList.remove('visualizer-mode');
       }
     });
   });

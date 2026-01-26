@@ -593,24 +593,99 @@ header h1 {
   gap: 8px;
 }
 
+.color-grid.large {
+  grid-template-columns: repeat(6, 1fr);
+  gap: 10px;
+}
+
 .color-swatch {
   width: 100%;
   aspect-ratio: 1;
   border: 3px solid transparent;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   transition: all 0.2s;
-  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+  min-height: 40px;
 }
 
 .color-swatch:hover {
   transform: scale(1.1);
-  box-shadow: 0 2px 8px rgba(0,0,0,0.3);
+  box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+  z-index: 10;
 }
 
 .color-swatch.selected {
   border-color: #2563EB;
-  box-shadow: 0 0 0 2px #2563EB;
+  box-shadow: 0 0 0 3px #2563EB;
+  transform: scale(1.05);
+}
+
+/* ============================================
+   VISUALIZER FULLSCREEN MODE
+   ============================================ */
+
+/* When visualizer tab is active, hide map and expand controls */
+.main-content.visualizer-mode #map,
+.main-content.visualizer-mode #streetview-container {
+  display: none !important;
+}
+
+.main-content.visualizer-mode .controls {
+  width: 100%;
+  max-width: 800px;
+  margin: 0 auto;
+  padding: 30px;
+}
+
+.main-content.visualizer-mode #visualizer-tab h3 {
+  font-size: 1.5rem;
+  text-align: center;
+  margin-bottom: 25px;
+}
+
+.main-content.visualizer-mode .upload-area {
+  padding: 40px 20px;
+}
+
+.main-content.visualizer-mode .upload-icon {
+  font-size: 3rem;
+}
+
+.main-content.visualizer-mode .image-preview {
+  max-width: 500px;
+  margin: 0 auto 20px auto;
+}
+
+.main-content.visualizer-mode .viz-options {
+  padding: 20px;
+}
+
+.main-content.visualizer-mode .color-grid.large {
+  grid-template-columns: repeat(9, 1fr);
+  gap: 12px;
+}
+
+.main-content.visualizer-mode .color-swatch {
+  min-height: 50px;
+}
+
+.main-content.visualizer-mode .generate-btn {
+  max-width: 400px;
+  margin: 20px auto;
+  display: block;
+  padding: 16px;
+  font-size: 1.1rem;
+}
+
+.main-content.visualizer-mode .viz-results {
+  max-width: 700px;
+  margin: 20px auto;
+}
+
+.main-content.visualizer-mode .results-grid {
+  grid-template-columns: 1fr 1fr;
+  gap: 20px;
 }
 
 /* Fence Grid */

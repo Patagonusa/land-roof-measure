@@ -243,26 +243,46 @@ app.post('/api/visualize', async (req, res) => {
 
     // Download the original image
     const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch image: ${imageResponse.status}`);
+    }
     const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
-    const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
 
-    // Use Hugging Face InstructPix2Pix model
-    // This model edits images based on text instructions while preserving structure
-    const result = await hf.imageToImage({
-      model: 'timbrooks/instruct-pix2pix',
-      inputs: imageBlob,
-      parameters: {
-        prompt: prompt,
-        guidance_scale: 7.5,
-        image_guidance_scale: 1.5,  // Higher = more faithful to original
-        num_inference_steps: 30
+    console.log('Image downloaded, size:', imageBuffer.length);
+
+    // Use Hugging Face API directly for better control
+    const hfResponse = await fetch(
+      'https://api-inference.huggingface.co/models/timbrooks/instruct-pix2pix',
+      {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          inputs: {
+            image: imageBuffer.toString('base64'),
+            prompt: prompt
+          },
+          parameters: {
+            guidance_scale: 7.5,
+            image_guidance_scale: 1.2,
+            num_inference_steps: 25
+          }
+        })
       }
-    });
+    );
+
+    if (!hfResponse.ok) {
+      const errorText = await hfResponse.text();
+      console.error('HuggingFace API error:', errorText);
+      throw new Error(`HuggingFace API error: ${hfResponse.status} - ${errorText}`);
+    }
 
     console.log('HuggingFace result received');
 
-    // Convert blob result to buffer
-    const resultBuffer = Buffer.from(await result.arrayBuffer());
+    // Get the result as buffer
+    const resultBuffer = Buffer.from(await hfResponse.arrayBuffer());
 
     // Store the generated image in Supabase
     const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
