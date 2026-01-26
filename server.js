@@ -250,39 +250,83 @@ app.post('/api/visualize', async (req, res) => {
 
     console.log('Image downloaded, size:', imageBuffer.length);
 
-    // Use Hugging Face API directly for better control
-    const hfResponse = await fetch(
-      'https://api-inference.huggingface.co/models/timbrooks/instruct-pix2pix',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          inputs: {
-            image: imageBuffer.toString('base64'),
-            prompt: prompt
+    let resultBuffer;
+
+    try {
+      // Try Hugging Face InstructPix2Pix - send image as binary with prompt parameter
+      const hfResponse = await fetch(
+        `https://api-inference.huggingface.co/models/timbrooks/instruct-pix2pix`,
+        {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
+            'Content-Type': 'application/octet-stream',
+            'X-Wait-For-Model': 'true'
           },
-          parameters: {
-            guidance_scale: 7.5,
-            image_guidance_scale: 1.2,
-            num_inference_steps: 25
-          }
-        })
+          body: imageBuffer
+        }
+      );
+
+      // Check if model is loading (503)
+      if (hfResponse.status === 503) {
+        const loadingInfo = await hfResponse.json();
+        console.log('Model is loading:', loadingInfo);
+        throw new Error('Model is loading, please try again in a moment');
       }
-    );
 
-    if (!hfResponse.ok) {
-      const errorText = await hfResponse.text();
-      console.error('HuggingFace API error:', errorText);
-      throw new Error(`HuggingFace API error: ${hfResponse.status} - ${errorText}`);
+      if (!hfResponse.ok) {
+        const errorText = await hfResponse.text();
+        console.error('HuggingFace API error:', hfResponse.status, errorText);
+        throw new Error(`HuggingFace error: ${errorText}`);
+      }
+
+      console.log('HuggingFace result received');
+      resultBuffer = Buffer.from(await hfResponse.arrayBuffer());
+
+    } catch (hfError) {
+      console.error('HuggingFace failed, falling back to OpenAI:', hfError.message);
+
+      // Fallback: Use OpenAI to generate a new image based on detailed description
+      const analysisResponse = await openai.chat.completions.create({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Describe this house/property image in extreme detail - architecture style, exact colors of walls/roof/trim, materials, windows, doors, landscaping, driveway, sky, lighting, camera angle. Be very specific about every visual element.`
+              },
+              {
+                type: 'image_url',
+                image_url: { url: imageUrl }
+              }
+            ]
+          }
+        ],
+        max_tokens: 1000
+      });
+
+      const description = analysisResponse.choices[0].message.content;
+      console.log('Image analyzed by GPT-4o');
+
+      // Generate modified version with DALL-E
+      const dallePrompt = `Photorealistic image: ${description}\n\nIMPORTANT MODIFICATION: ${prompt}. Keep EVERYTHING else exactly the same - same house, same angle, same composition, same lighting.`;
+
+      const imageGenResponse = await openai.images.generate({
+        model: 'dall-e-3',
+        prompt: dallePrompt,
+        n: 1,
+        size: '1024x1024',
+        quality: 'hd',
+        style: 'natural'
+      });
+
+      const generatedUrl = imageGenResponse.data[0].url;
+      const generatedResponse = await fetch(generatedUrl);
+      resultBuffer = Buffer.from(await generatedResponse.arrayBuffer());
+      console.log('DALL-E fallback image generated');
     }
-
-    console.log('HuggingFace result received');
-
-    // Get the result as buffer
-    const resultBuffer = Buffer.from(await hfResponse.arrayBuffer());
 
     // Store the generated image in Supabase
     const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
