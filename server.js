@@ -250,51 +250,28 @@ app.post('/api/visualize', async (req, res) => {
 
     console.log('Image downloaded, size:', imageBuffer.length);
 
-    // Use Hugging Face Inference API with proper image-to-image format
-    // InstructPix2Pix requires multipart form data with image and parameters
-    const FormData = require('form-data');
-    const formData = new FormData();
-    formData.append('inputs', imageBuffer, {
-      filename: 'image.jpg',
-      contentType: 'image/jpeg'
-    });
-    formData.append('parameters', JSON.stringify({
-      prompt: prompt,
-      guidance_scale: 7.5,
-      image_guidance_scale: 1.5,
-      num_inference_steps: 30
-    }));
+    // Use HuggingFace Inference library for image-to-image
+    console.log('Sending to HuggingFace InstructPix2Pix via inference library...');
 
-    console.log('Sending to HuggingFace InstructPix2Pix...');
+    // Create a Blob from the buffer for the HF inference library
+    const imageBlob = new Blob([imageBuffer], { type: 'image/jpeg' });
 
-    const hfResponse = await fetch(
-      'https://router.huggingface.co/hf-inference/models/timbrooks/instruct-pix2pix',
-      {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${process.env.HUGGINGFACE_API_TOKEN}`,
-          'X-Wait-For-Model': 'true',
-          ...formData.getHeaders()
-        },
-        body: formData
+    const result = await hf.imageToImage({
+      model: 'timbrooks/instruct-pix2pix',
+      inputs: imageBlob,
+      parameters: {
+        prompt: prompt,
+        guidance_scale: 7.5,
+        image_guidance_scale: 1.5,
+        num_inference_steps: 30
       }
-    );
-
-    // Check response
-    if (hfResponse.status === 503) {
-      const loadingInfo = await hfResponse.json();
-      console.log('Model is loading, estimated time:', loadingInfo.estimated_time);
-      throw new Error(`Model is loading. Please wait ${Math.ceil(loadingInfo.estimated_time || 30)} seconds and try again.`);
-    }
-
-    if (!hfResponse.ok) {
-      const errorText = await hfResponse.text();
-      console.error('HuggingFace API error:', hfResponse.status, errorText);
-      throw new Error(`HuggingFace API error: ${errorText}`);
-    }
+    });
 
     console.log('HuggingFace result received successfully');
-    const resultBuffer = Buffer.from(await hfResponse.arrayBuffer());
+
+    // Convert the result Blob to Buffer
+    const resultArrayBuffer = await result.arrayBuffer();
+    const resultBuffer = Buffer.from(resultArrayBuffer);
 
     // Store the generated image in Supabase
     const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
