@@ -265,16 +265,15 @@ app.post('/api/visualize', async (req, res) => {
           instances: [
             {
               prompt: prompt,
-              image: {
-                bytesBase64Encoded: base64Image
-              },
-              editConfig: {
-                contextImages: [
-                  {
+              referenceImages: [
+                {
+                  referenceType: 'REFERENCE_TYPE_RAW',
+                  referenceId: 1,
+                  referenceImage: {
                     bytesBase64Encoded: base64Image
                   }
-                ]
-              }
+                }
+              ]
             }
           ],
           parameters: {
