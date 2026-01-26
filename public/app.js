@@ -2,8 +2,10 @@ let map;
 let drawingManager;
 let landPolygons = [];
 let roofPolygons = [];
+let fencePolylines = [];
 let currentMode = null;
 let selectedPolygon = null;
+let selectedPolyline = null;
 let addressMarker = null;
 let streetViewPanorama = null;
 let streetViewService = null;
@@ -13,6 +15,7 @@ let isStreetViewActive = false;
 const COLORS = {
   land: '#2563EB',      // Royal Blue
   roof: '#1E3A5F',      // Mountain Blue
+  fence: '#059669',     // Emerald Green
   marker: '#3B82F6',    // Sky Blue
   markerBorder: '#FFFFFF'
 };
@@ -118,13 +121,41 @@ function initMap() {
 
     // Keep drawing mode active so user can draw more sections
     // Re-enable polygon drawing in the same mode
-    if (currentMode) {
+    if (currentMode && currentMode !== 'fence') {
       setTimeout(() => {
         drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
       }, 100);
     }
 
     updateAreas();
+  });
+
+  // Handle polyline complete (for fence/wall measurement)
+  google.maps.event.addListener(drawingManager, 'polylinecomplete', function(polyline) {
+    if (currentMode === 'fence') {
+      polyline.setOptions({
+        strokeColor: COLORS.fence,
+        strokeWeight: 4
+      });
+      fencePolylines.push(polyline);
+
+      // Add click listener for selection
+      google.maps.event.addListener(polyline, 'click', function() {
+        selectPolyline(polyline);
+      });
+
+      // Add path change listeners for distance recalculation
+      google.maps.event.addListener(polyline.getPath(), 'set_at', updateAreas);
+      google.maps.event.addListener(polyline.getPath(), 'insert_at', updateAreas);
+      google.maps.event.addListener(polyline.getPath(), 'remove_at', updateAreas);
+
+      // Keep drawing mode active for more lines
+      setTimeout(() => {
+        drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+      }, 100);
+
+      updateAreas();
+    }
   });
 
   // Setup event listeners
@@ -141,6 +172,7 @@ function setupEventListeners() {
   // Tool buttons
   document.getElementById('land-btn').addEventListener('click', () => setDrawingMode('land'));
   document.getElementById('roof-btn').addEventListener('click', () => setDrawingMode('roof'));
+  document.getElementById('fence-btn').addEventListener('click', () => setDrawingMode('fence'));
   document.getElementById('streetview-btn').addEventListener('click', toggleStreetView);
   document.getElementById('clear-btn').addEventListener('click', clearAll);
 
@@ -149,12 +181,13 @@ function setupEventListeners() {
 
   // Keyboard listener for delete
   document.addEventListener('keydown', function(e) {
-    if ((e.key === 'Delete' || e.key === 'Backspace') && selectedPolygon) {
+    if ((e.key === 'Delete' || e.key === 'Backspace') && (selectedPolygon || selectedPolyline)) {
       deleteSelectedPolygon();
     }
     if (e.key === 'Escape') {
       drawingManager.setDrawingMode(null);
       deselectPolygon();
+      deselectPolyline();
       updateButtonStates();
     }
   });
@@ -280,34 +313,50 @@ function updateStreetView(location) {
 function setDrawingMode(mode) {
   currentMode = mode;
   deselectPolygon();
+  deselectPolyline();
 
-  const options = {
-    fillOpacity: 0.3,
-    strokeWeight: 2,
-    editable: true,
-    draggable: true
-  };
+  if (mode === 'fence') {
+    // Use polyline for fence/wall distance measurement
+    const polylineOptions = {
+      strokeColor: COLORS.fence,
+      strokeWeight: 4,
+      editable: true,
+      draggable: true
+    };
+    drawingManager.setOptions({ polylineOptions: polylineOptions });
+    drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYLINE);
+  } else {
+    // Use polygon for area measurement (land/roof)
+    const polygonOptions = {
+      fillOpacity: 0.3,
+      strokeWeight: 2,
+      editable: true,
+      draggable: true
+    };
 
-  if (mode === 'land') {
-    options.fillColor = COLORS.land;
-    options.strokeColor = COLORS.land;
-  } else if (mode === 'roof') {
-    options.fillColor = COLORS.roof;
-    options.strokeColor = COLORS.roof;
+    if (mode === 'land') {
+      polygonOptions.fillColor = COLORS.land;
+      polygonOptions.strokeColor = COLORS.land;
+    } else if (mode === 'roof') {
+      polygonOptions.fillColor = COLORS.roof;
+      polygonOptions.strokeColor = COLORS.roof;
+    }
+
+    drawingManager.setOptions({ polygonOptions: polygonOptions });
+    drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
   }
-
-  drawingManager.setOptions({ polygonOptions: options });
-  drawingManager.setDrawingMode(google.maps.drawing.OverlayType.POLYGON);
   updateButtonStates();
 }
 
 function updateButtonStates() {
   document.getElementById('land-btn').classList.toggle('active', currentMode === 'land');
   document.getElementById('roof-btn').classList.toggle('active', currentMode === 'roof');
+  document.getElementById('fence-btn').classList.toggle('active', currentMode === 'fence');
 }
 
 function selectPolygon(polygon) {
   deselectPolygon();
+  deselectPolyline();
   selectedPolygon = polygon;
   polygon.setOptions({ strokeWeight: 4 });
 }
@@ -319,23 +368,48 @@ function deselectPolygon() {
   }
 }
 
-function deleteSelectedPolygon() {
-  if (!selectedPolygon) return;
+function selectPolyline(polyline) {
+  deselectPolygon();
+  deselectPolyline();
+  selectedPolyline = polyline;
+  polyline.setOptions({ strokeWeight: 6 });
+}
 
-  // Remove from appropriate array
-  let index = landPolygons.indexOf(selectedPolygon);
-  if (index > -1) {
-    landPolygons.splice(index, 1);
-  } else {
-    index = roofPolygons.indexOf(selectedPolygon);
+function deselectPolyline() {
+  if (selectedPolyline) {
+    selectedPolyline.setOptions({ strokeWeight: 4 });
+    selectedPolyline = null;
+  }
+}
+
+function deleteSelectedPolygon() {
+  // Handle polygon deletion
+  if (selectedPolygon) {
+    let index = landPolygons.indexOf(selectedPolygon);
     if (index > -1) {
-      roofPolygons.splice(index, 1);
+      landPolygons.splice(index, 1);
+    } else {
+      index = roofPolygons.indexOf(selectedPolygon);
+      if (index > -1) {
+        roofPolygons.splice(index, 1);
+      }
     }
+    selectedPolygon.setMap(null);
+    selectedPolygon = null;
+    updateAreas();
+    return;
   }
 
-  selectedPolygon.setMap(null);
-  selectedPolygon = null;
-  updateAreas();
+  // Handle polyline deletion (fence/wall)
+  if (selectedPolyline) {
+    const index = fencePolylines.indexOf(selectedPolyline);
+    if (index > -1) {
+      fencePolylines.splice(index, 1);
+    }
+    selectedPolyline.setMap(null);
+    selectedPolyline = null;
+    updateAreas();
+  }
 }
 
 function clearAll() {
@@ -348,9 +422,16 @@ function clearAll() {
     google.maps.event.clearInstanceListeners(p);
     p.setMap(null);
   });
+  // Clear all fence polylines from map
+  fencePolylines.forEach(p => {
+    google.maps.event.clearInstanceListeners(p);
+    p.setMap(null);
+  });
   landPolygons = [];
   roofPolygons = [];
+  fencePolylines = [];
   selectedPolygon = null;
+  selectedPolyline = null;
 
   // Reset drawing mode so user can start fresh
   currentMode = null;
@@ -373,13 +454,26 @@ function calculateTotalArea(polygons) {
   return totalArea; // in square meters
 }
 
+function calculateTotalLength(polylines) {
+  let totalLength = 0;
+  polylines.forEach(polyline => {
+    const length = google.maps.geometry.spherical.computeLength(polyline.getPath());
+    totalLength += length;
+  });
+  return totalLength; // in meters
+}
+
 function updateAreas() {
   const landAreaM2 = calculateTotalArea(landPolygons);
   const roofAreaM2 = calculateTotalArea(roofPolygons);
+  const fenceLengthM = calculateTotalLength(fencePolylines);
 
   // Convert to square feet (1 m² = 10.7639 sq ft)
   const landAreaSqFt = landAreaM2 * 10.7639;
   const roofAreaSqFt = roofAreaM2 * 10.7639;
+
+  // Convert to feet (1 m = 3.28084 ft)
+  const fenceLengthFt = fenceLengthM * 3.28084;
 
   // Get pitch multiplier
   const pitchMultiplier = parseFloat(document.getElementById('roof-pitch').value);
@@ -399,6 +493,11 @@ function updateAreas() {
   document.getElementById('roof-area-adjusted').textContent = formatNumber(adjustedRoofSqFt);
   document.getElementById('roof-area-adjusted-m2').textContent = formatNumber(adjustedRoofM2);
   document.getElementById('roof-squares').textContent = formatNumber(roofSquares);
+
+  // Update fence/wall distance display
+  document.getElementById('fence-length').textContent = formatNumber(fenceLengthFt);
+  document.getElementById('fence-length-m').textContent = formatNumber(fenceLengthM);
+  document.getElementById('fence-count').textContent = fencePolylines.length;
 }
 
 function formatNumber(num) {

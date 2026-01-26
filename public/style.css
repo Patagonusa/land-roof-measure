@@ -175,6 +175,17 @@ header h1 {
   color: white;
 }
 
+.tool-btn.fence {
+  background: white;
+  border-color: #059669;
+  color: #059669;
+}
+
+.tool-btn.fence:hover, .tool-btn.fence.active {
+  background: #059669;
+  color: white;
+}
+
 .tool-btn.streetview {
   background: white;
   border-color: #60A5FA;
@@ -232,6 +243,11 @@ header h1 {
 
 .result-item.roof.adjusted .secondary {
   color: #93C5FD;
+}
+
+.result-item.fence {
+  background: #ECFDF5;
+  border-left: 4px solid #059669;
 }
 
 .result-item.total {
