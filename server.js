@@ -226,11 +226,11 @@ app.post('/api/visualize', async (req, res) => {
     let prompt = '';
 
     if (type === 'paint') {
-      prompt = `Change the house exterior paint color to ${options.color}`;
+      prompt = `Change ONLY the house exterior wall siding paint color to ${options.color}. Keep the roof, gutters, trim, windows, doors, and all other elements exactly the same color as original. Only change the main wall surfaces.`;
     } else if (type === 'fence') {
-      prompt = `Add a ${options.material} ${options.style} fence`;
+      prompt = `Add a ${options.material} ${options.style} fence to the property. Keep the house and all other elements exactly the same.`;
     } else if (type === 'roof') {
-      prompt = `Change the roof to ${options.color} shingles`;
+      prompt = `Change ONLY the roof shingles to ${options.color} color. Keep the walls, siding, gutters, trim, and all other elements exactly the same color as original.`;
     } else {
       return res.status(400).json({ error: 'Invalid visualization type. Use: paint, fence, or roof' });
     }

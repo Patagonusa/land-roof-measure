@@ -240,18 +240,30 @@
 
           <!-- Results Area -->
           <div class="viz-results" id="viz-results" style="display: none;">
-            <h4>Resultado</h4>
-            <div class="results-grid">
-              <div class="result-card">
+            <h4>Resultado Actual</h4>
+            <div class="results-grid-large">
+              <div class="result-card-large">
                 <span class="result-label">Original</span>
                 <img id="result-original" src="" alt="Original">
               </div>
-              <div class="result-card">
+              <div class="result-card-large">
                 <span class="result-label">Visualizacion</span>
                 <img id="result-generated" src="" alt="Generated">
               </div>
             </div>
-            <button class="download-btn" id="download-btn">📥 Descargar Resultado</button>
+            <div class="result-actions">
+              <button class="download-btn" id="download-btn">Descargar Resultado</button>
+              <button class="save-history-btn" id="save-history-btn">Guardar en Historial</button>
+            </div>
+          </div>
+
+          <!-- History Section -->
+          <div class="viz-history" id="viz-history" style="display: none;">
+            <h4>Historial de Visualizaciones</h4>
+            <div class="history-grid" id="history-grid">
+              <!-- History items will be added here dynamically -->
+            </div>
+            <button class="clear-history-btn" id="clear-history-btn">Limpiar Historial</button>
           </div>
         </div>
 

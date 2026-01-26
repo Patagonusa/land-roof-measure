@@ -419,6 +419,21 @@ let selectedFenceMaterial = 'vinyl';
 let selectedFenceStyle = 'white';
 let selectedRoofColor = 'charcoal gray';
 let generatedImageUrl = null;
+let visualizationHistory = [];
+
+// Load history from localStorage
+function loadHistory() {
+  const saved = localStorage.getItem('visualizationHistory');
+  if (saved) {
+    visualizationHistory = JSON.parse(saved);
+    renderHistory();
+  }
+}
+
+// Save history to localStorage
+function saveHistory() {
+  localStorage.setItem('visualizationHistory', JSON.stringify(visualizationHistory));
+}
 
 // Initialize visualizer when DOM is ready
 document.addEventListener('DOMContentLoaded', function() {
@@ -529,6 +544,21 @@ function setupVisualizerEvents() {
   if (downloadBtn) {
     downloadBtn.addEventListener('click', downloadResult);
   }
+
+  // Save to history button
+  const saveHistoryBtn = document.getElementById('save-history-btn');
+  if (saveHistoryBtn) {
+    saveHistoryBtn.addEventListener('click', saveToHistory);
+  }
+
+  // Clear history button
+  const clearHistoryBtn = document.getElementById('clear-history-btn');
+  if (clearHistoryBtn) {
+    clearHistoryBtn.addEventListener('click', clearHistory);
+  }
+
+  // Load existing history
+  loadHistory();
 }
 
 // Handle drag over
@@ -732,4 +762,117 @@ function downloadResult() {
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
+}
+
+// Save current result to history
+function saveToHistory() {
+  if (!generatedImageUrl || !uploadedImageUrl) {
+    alert('No hay visualizacion para guardar.');
+    return;
+  }
+
+  // Get the current visualization details
+  let colorOrStyle = '';
+  if (selectedVizType === 'paint') {
+    colorOrStyle = selectedPaintColor;
+  } else if (selectedVizType === 'fence') {
+    colorOrStyle = `${selectedFenceMaterial} ${selectedFenceStyle}`;
+  } else if (selectedVizType === 'roof') {
+    colorOrStyle = selectedRoofColor;
+  }
+
+  const historyItem = {
+    id: Date.now(),
+    type: selectedVizType,
+    color: colorOrStyle,
+    originalUrl: uploadedImageUrl,
+    generatedUrl: generatedImageUrl,
+    timestamp: new Date().toLocaleString()
+  };
+
+  visualizationHistory.unshift(historyItem);
+
+  // Keep only last 20 items
+  if (visualizationHistory.length > 20) {
+    visualizationHistory = visualizationHistory.slice(0, 20);
+  }
+
+  saveHistory();
+  renderHistory();
+
+  alert('Guardado en historial!');
+}
+
+// Render history grid
+function renderHistory() {
+  const historySection = document.getElementById('viz-history');
+  const historyGrid = document.getElementById('history-grid');
+
+  if (visualizationHistory.length === 0) {
+    historySection.style.display = 'none';
+    return;
+  }
+
+  historySection.style.display = 'block';
+  historyGrid.innerHTML = '';
+
+  visualizationHistory.forEach(item => {
+    const div = document.createElement('div');
+    div.className = 'history-item';
+    div.dataset.id = item.id;
+    div.innerHTML = `
+      <img src="${item.generatedUrl}" alt="Visualization">
+      <div class="history-item-info">
+        <div class="history-item-type">${getTypeLabel(item.type)}</div>
+        <div class="history-item-color">${item.color}</div>
+      </div>
+      <button class="history-item-delete" onclick="deleteHistoryItem(${item.id}); event.stopPropagation();">x</button>
+    `;
+
+    // Click to view full size
+    div.addEventListener('click', () => viewHistoryItem(item));
+
+    historyGrid.appendChild(div);
+  });
+}
+
+// Get display label for type
+function getTypeLabel(type) {
+  const labels = {
+    'paint': 'Pintura',
+    'fence': 'Cerca',
+    'roof': 'Techo'
+  };
+  return labels[type] || type;
+}
+
+// View history item in main result area
+function viewHistoryItem(item) {
+  document.getElementById('result-original').src = item.originalUrl;
+  document.getElementById('result-generated').src = item.generatedUrl;
+  document.getElementById('viz-results').style.display = 'block';
+  generatedImageUrl = item.generatedUrl;
+
+  // Highlight selected item
+  document.querySelectorAll('.history-item').forEach(el => el.classList.remove('selected'));
+  document.querySelector(`.history-item[data-id="${item.id}"]`)?.classList.add('selected');
+
+  // Scroll to results
+  document.getElementById('viz-results').scrollIntoView({ behavior: 'smooth' });
+}
+
+// Delete single history item
+function deleteHistoryItem(id) {
+  visualizationHistory = visualizationHistory.filter(item => item.id !== id);
+  saveHistory();
+  renderHistory();
+}
+
+// Clear all history
+function clearHistory() {
+  if (confirm('Estas seguro de borrar todo el historial?')) {
+    visualizationHistory = [];
+    saveHistory();
+    renderHistory();
+  }
 }
