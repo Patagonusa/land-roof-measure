@@ -3,13 +3,7 @@ const path = require('path');
 const { createClient } = require('@supabase/supabase-js');
 const multer = require('multer');
 const OpenAI = require('openai');
-const { fal } = require('@fal-ai/client');
 require('dotenv').config();
-
-// Configure fal.ai
-fal.config({
-  credentials: process.env.FAL_KEY
-});
 
 // Configure multer for memory storage
 const upload = multer({
@@ -244,32 +238,60 @@ app.post('/api/visualize', async (req, res) => {
     console.log('Starting visualization with prompt:', prompt);
     console.log('Image URL:', imageUrl);
 
-    // Use fal.ai FLUX image-to-image API
-    console.log('Sending to fal.ai FLUX image-to-image...');
-
-    const result = await fal.subscribe('fal-ai/flux/dev/image-to-image', {
-      input: {
-        image_url: imageUrl,
-        prompt: prompt,
-        strength: 0.75,
-        num_inference_steps: 28,
-        guidance_scale: 3.5,
-        num_images: 1,
-        output_format: 'jpeg'
-      }
-    });
-
-    console.log('fal.ai result received successfully');
-
-    // Get the generated image URL from fal.ai
-    const generatedUrl = result.data.images[0].url;
-
-    // Download the generated image to store in Supabase
-    const generatedResponse = await fetch(generatedUrl);
-    if (!generatedResponse.ok) {
-      throw new Error(`Failed to download generated image: ${generatedResponse.status}`);
+    // Download the original image and convert to base64
+    const imageResponse = await fetch(imageUrl);
+    if (!imageResponse.ok) {
+      throw new Error(`Failed to fetch image: ${imageResponse.status}`);
     }
-    const resultBuffer = Buffer.from(await generatedResponse.arrayBuffer());
+    const imageBuffer = Buffer.from(await imageResponse.arrayBuffer());
+    const base64Image = imageBuffer.toString('base64');
+
+    console.log('Image downloaded, size:', imageBuffer.length);
+    console.log('Sending to Google Vertex AI Imagen...');
+
+    // Use Google Vertex AI Imagen API for image editing
+    const projectId = process.env.GOOGLE_CLOUD_PROJECT_ID || 'neat-encoder-306723';
+    const location = 'us-central1';
+    const apiKey = process.env.GOOGLE_CLOUD_API_KEY;
+
+    const imagenResponse = await fetch(
+      `https://${location}-aiplatform.googleapis.com/v1/projects/${projectId}/locations/${location}/publishers/google/models/imagen-3.0-capability-001:predict?key=${apiKey}`,
+      {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json'
+        },
+        body: JSON.stringify({
+          instances: [
+            {
+              prompt: prompt,
+              image: {
+                bytesBase64Encoded: base64Image
+              }
+            }
+          ],
+          parameters: {
+            sampleCount: 1,
+            editConfig: {
+              editMode: 'INPAINT_INSERTION'
+            }
+          }
+        })
+      }
+    );
+
+    if (!imagenResponse.ok) {
+      const errorText = await imagenResponse.text();
+      console.error('Imagen API error:', imagenResponse.status, errorText);
+      throw new Error(`Imagen API error: ${errorText}`);
+    }
+
+    const imagenResult = await imagenResponse.json();
+    console.log('Google Imagen result received successfully');
+
+    // Get the generated image from the response
+    const generatedBase64 = imagenResult.predictions[0].bytesBase64Encoded;
+    const resultBuffer = Buffer.from(generatedBase64, 'base64');
 
     // Store the generated image in Supabase
     const fileName = `generated/${Date.now()}-${Math.random().toString(36).substring(7)}.jpg`;
