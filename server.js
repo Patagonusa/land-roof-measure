@@ -267,14 +267,18 @@ app.post('/api/visualize', async (req, res) => {
               prompt: prompt,
               image: {
                 bytesBase64Encoded: base64Image
+              },
+              editConfig: {
+                contextImages: [
+                  {
+                    bytesBase64Encoded: base64Image
+                  }
+                ]
               }
             }
           ],
           parameters: {
-            sampleCount: 1,
-            editConfig: {
-              editMode: 'INPAINT_INSERTION'
-            }
+            sampleCount: 1
           }
         })
       }
