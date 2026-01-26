@@ -268,7 +268,7 @@ app.post('/api/visualize', async (req, res) => {
     console.log('Sending to HuggingFace InstructPix2Pix...');
 
     const hfResponse = await fetch(
-      'https://api-inference.huggingface.co/models/timbrooks/instruct-pix2pix',
+      'https://router.huggingface.co/hf-inference/models/timbrooks/instruct-pix2pix',
       {
         method: 'POST',
         headers: {
