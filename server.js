@@ -231,8 +231,14 @@ app.post('/api/visualize', async (req, res) => {
       prompt = `Add a ${options.material} ${options.style} fence to the property. Keep the house and all other elements exactly the same.`;
     } else if (type === 'roof') {
       prompt = `Change ONLY the roof shingles to ${options.color} color. Keep the walls, siding, gutters, trim, and all other elements exactly the same color as original.`;
+    } else if (type === 'flooring') {
+      let flooringDesc = options.style || 'hardwood';
+      if (options.category === 'carpet' && options.carpetType) {
+        flooringDesc = `${options.carpetType} ${flooringDesc}`;
+      }
+      prompt = `Replace ONLY the floor surface in this interior room photo with ${flooringDesc} flooring. The new flooring should look realistic and professionally installed. Keep the walls, ceiling, furniture, fixtures, doors, baseboards, and all other elements exactly the same. Only change the floor surface.`;
     } else {
-      return res.status(400).json({ error: 'Invalid visualization type. Use: paint, fence, or roof' });
+      return res.status(400).json({ error: 'Invalid visualization type. Use: paint, fence, roof, or flooring' });
     }
 
     console.log('Starting visualization with prompt:', prompt);

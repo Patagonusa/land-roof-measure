@@ -131,6 +131,10 @@
                 <input type="radio" name="viz-type" value="roof">
                 <span class="viz-radio-label">🏠 Techo</span>
               </label>
+              <label class="viz-radio">
+                <input type="radio" name="viz-type" value="flooring">
+                <span class="viz-radio-label">🪵 Pisos</span>
+              </label>
             </div>
           </div>
 
@@ -314,6 +318,130 @@
             </div>
           </div>
 
+          <!-- Flooring Options -->
+          <div class="viz-options" id="flooring-options" style="display: none;">
+            <h4>Tipo de Piso</h4>
+            <div class="flooring-category-select">
+              <select id="flooring-category">
+                <option value="hardwood">Madera Dura (Hardwood)</option>
+                <option value="lvp">Vinilo de Lujo (LVP)</option>
+                <option value="tile">Azulejo (Tile)</option>
+                <option value="carpet">Alfombra (Carpet)</option>
+                <option value="specialty">Especialidad y Eco</option>
+              </select>
+            </div>
+
+            <!-- Hardwood Options -->
+            <div class="flooring-sub-options" id="flooring-hardwood">
+              <span class="category-label">Tonos de Madera</span>
+              <div class="color-grid large">
+                <button class="flooring-swatch selected" data-style="natural oak hardwood" style="background: #C4A56E;" title="Natural Oak"></button>
+                <button class="flooring-swatch" data-style="golden oak hardwood" style="background: #D4A84B;" title="Golden Oak"></button>
+                <button class="flooring-swatch" data-style="warm maple hardwood" style="background: #C06A2B;" title="Warm Maple"></button>
+                <button class="flooring-swatch" data-style="classic walnut hardwood" style="background: #8B6914;" title="Classic Walnut"></button>
+                <button class="flooring-swatch" data-style="dark hickory hardwood" style="background: #5C4A1F;" title="Dark Hickory"></button>
+                <button class="flooring-swatch" data-style="espresso hardwood" style="background: #3C2415;" title="Espresso"></button>
+              </div>
+            </div>
+
+            <!-- LVP Options -->
+            <div class="flooring-sub-options" id="flooring-lvp" style="display: none;">
+              <span class="category-label">Estilos de Vinilo</span>
+              <div class="color-grid large">
+                <button class="flooring-swatch" data-style="light oak look luxury vinyl plank" style="background: #C8B896;" title="Light Oak Look"></button>
+                <button class="flooring-swatch" data-style="weathered wood luxury vinyl plank" style="background: #9E8B6E;" title="Weathered Wood"></button>
+                <button class="flooring-swatch" data-style="gray stone luxury vinyl plank" style="background: #808080;" title="Gray Stone"></button>
+                <button class="flooring-swatch" data-style="travertine look luxury vinyl plank" style="background: #D4C5A9;" title="Travertine Look"></button>
+                <button class="flooring-swatch" data-style="slate look luxury vinyl plank" style="background: #6B7B8D;" title="Slate Look"></button>
+                <button class="flooring-swatch" data-style="dark concrete luxury vinyl plank" style="background: #4A4A4A;" title="Dark Concrete"></button>
+              </div>
+            </div>
+
+            <!-- Tile Options -->
+            <div class="flooring-sub-options" id="flooring-tile" style="display: none;">
+              <span class="category-label">Tipos de Azulejo</span>
+              <div class="fence-grid">
+                <button class="fence-option" data-style="white ceramic tile">
+                  <span class="fence-icon">◻️</span>
+                  <span>Ceramico</span>
+                </button>
+                <button class="fence-option" data-style="porcelain tile with marble look">
+                  <span class="fence-icon">🔲</span>
+                  <span>Porcelanato</span>
+                </button>
+                <button class="fence-option" data-style="natural marble stone tile">
+                  <span class="fence-icon">🪨</span>
+                  <span>Piedra Natural</span>
+                </button>
+                <button class="fence-option" data-style="white subway tile">
+                  <span class="fence-icon">▬</span>
+                  <span>Subway</span>
+                </button>
+                <button class="fence-option" data-style="mosaic pattern tile">
+                  <span class="fence-icon">🔳</span>
+                  <span>Mosaico</span>
+                </button>
+                <button class="fence-option" data-style="large format porcelain tile">
+                  <span class="fence-icon">⬜</span>
+                  <span>Gran Formato</span>
+                </button>
+              </div>
+            </div>
+
+            <!-- Carpet Options -->
+            <div class="flooring-sub-options" id="flooring-carpet" style="display: none;">
+              <span class="category-label">Tipo de Alfombra</span>
+              <div class="flooring-category-select" style="margin-bottom: 10px;">
+                <select id="carpet-type">
+                  <option value="plush saxony">Plush / Saxony</option>
+                  <option value="berber loop">Berber / Loop</option>
+                  <option value="frieze twist">Frieze / Twist</option>
+                  <option value="pattern cut-loop">Pattern / Cut-Loop</option>
+                </select>
+              </div>
+              <span class="category-label">Color de Alfombra</span>
+              <div class="color-grid large">
+                <button class="flooring-swatch" data-style="soft cream carpet" style="background: #E8E0D0;" title="Soft Cream"></button>
+                <button class="flooring-swatch" data-style="warm beige carpet" style="background: #C8B99A;" title="Warm Beige"></button>
+                <button class="flooring-swatch" data-style="greige carpet" style="background: #A09880;" title="Greige"></button>
+                <button class="flooring-swatch" data-style="slate gray carpet" style="background: #708090;" title="Slate Gray"></button>
+                <button class="flooring-swatch" data-style="charcoal carpet" style="background: #4A4540;" title="Charcoal"></button>
+                <button class="flooring-swatch" data-style="deep gray carpet" style="background: #3A3A3A;" title="Deep Gray"></button>
+              </div>
+            </div>
+
+            <!-- Specialty Options -->
+            <div class="flooring-sub-options" id="flooring-specialty" style="display: none;">
+              <span class="category-label">Materiales Especiales</span>
+              <div class="fence-grid">
+                <button class="fence-option" data-style="bamboo flooring with natural grain">
+                  <span class="fence-icon">🎋</span>
+                  <span>Bambu</span>
+                </button>
+                <button class="fence-option" data-style="cork flooring with natural texture">
+                  <span class="fence-icon">🟤</span>
+                  <span>Corcho</span>
+                </button>
+                <button class="fence-option" data-style="laminate wood-look flooring">
+                  <span class="fence-icon">📋</span>
+                  <span>Laminado</span>
+                </button>
+                <button class="fence-option" data-style="polished concrete flooring">
+                  <span class="fence-icon">🏗️</span>
+                  <span>Concreto</span>
+                </button>
+                <button class="fence-option" data-style="metallic epoxy flooring">
+                  <span class="fence-icon">✨</span>
+                  <span>Epoxy</span>
+                </button>
+                <button class="fence-option" data-style="recycled material eco-friendly flooring">
+                  <span class="fence-icon">♻️</span>
+                  <span>Reciclado</span>
+                </button>
+              </div>
+            </div>
+          </div>
+
           <!-- Generate Button -->
           <button class="generate-btn" id="generate-btn" disabled>
             <span class="generate-text">Generar Visualizacion</span>
@@ -380,6 +508,7 @@
                 <option value="Visualizacion de Pintura Exterior">Visualizacion de Pintura Exterior</option>
                 <option value="Visualizacion de Cerca">Visualizacion de Cerca</option>
                 <option value="Visualizacion de Techo">Visualizacion de Techo</option>
+                <option value="Visualizacion de Pisos">Visualizacion de Pisos</option>
                 <option value="Opciones de Colores">Opciones de Colores</option>
               </select>
             </div>

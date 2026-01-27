@@ -1255,3 +1255,58 @@ header h1 {
   cursor: not-allowed;
   transform: none;
 }
+
+/* Flooring Options */
+.flooring-category-select {
+  margin-bottom: 12px;
+}
+
+.flooring-category-select select {
+  width: 100%;
+  padding: 10px;
+  font-size: 0.95rem;
+  border: 2px solid #60A5FA;
+  border-radius: 6px;
+  background: white;
+  cursor: pointer;
+  outline: none;
+  color: #0A1628;
+}
+
+.flooring-category-select select:focus {
+  border-color: #2563EB;
+}
+
+.flooring-sub-options {
+  margin-top: 8px;
+}
+
+.flooring-sub-options .category-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E3A5F;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.flooring-swatch {
+  width: 36px;
+  height: 36px;
+  border-radius: 6px;
+  border: 3px solid transparent;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.flooring-swatch:hover {
+  transform: scale(1.15);
+  box-shadow: 0 2px 8px rgba(0,0,0,0.2);
+}
+
+.flooring-swatch.selected {
+  border-color: #2563EB;
+  box-shadow: 0 0 0 2px #2563EB;
+  transform: scale(1.1);
+}

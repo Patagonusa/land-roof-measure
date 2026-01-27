@@ -517,6 +517,9 @@ let selectedPaintColor = 'white';
 let selectedFenceMaterial = 'vinyl';
 let selectedFenceStyle = 'white';
 let selectedRoofColor = 'charcoal gray';
+let selectedFlooringCategory = 'hardwood';
+let selectedFlooringStyle = 'natural oak hardwood';
+let selectedCarpetType = 'plush saxony';
 let generatedImageUrl = null;
 let visualizationHistory = [];
 
@@ -631,6 +634,27 @@ function setupVisualizerEvents() {
       selectedRoofColor = this.dataset.color;
     });
   });
+
+  // Flooring category selector
+  const flooringCategory = document.getElementById('flooring-category');
+  if (flooringCategory) {
+    flooringCategory.addEventListener('change', handleFlooringCategoryChange);
+  }
+
+  // Flooring style swatches (for hardwood, LVP, carpet)
+  setupFlooringSwatches();
+
+  // Flooring tile and specialty options (reuse fence-option pattern)
+  setupFlooringTileOptions();
+  setupFlooringSpecialtyOptions();
+
+  // Carpet type selector
+  const carpetType = document.getElementById('carpet-type');
+  if (carpetType) {
+    carpetType.addEventListener('change', function() {
+      selectedCarpetType = this.value;
+    });
+  }
 
   // Generate button
   const generateBtn = document.getElementById('generate-btn');
@@ -783,6 +807,7 @@ function handleVizTypeChange(e) {
   document.getElementById('paint-options').style.display = selectedVizType === 'paint' ? 'block' : 'none';
   document.getElementById('fence-options').style.display = selectedVizType === 'fence' ? 'block' : 'none';
   document.getElementById('roof-options').style.display = selectedVizType === 'roof' ? 'block' : 'none';
+  document.getElementById('flooring-options').style.display = selectedVizType === 'flooring' ? 'block' : 'none';
 }
 
 // Generate visualization
@@ -811,6 +836,12 @@ async function generateVisualization() {
       options = { material: selectedFenceMaterial, style: selectedFenceStyle };
     } else if (selectedVizType === 'roof') {
       options = { color: selectedRoofColor };
+    } else if (selectedVizType === 'flooring') {
+      options = {
+        category: selectedFlooringCategory,
+        style: selectedFlooringStyle,
+        carpetType: selectedFlooringCategory === 'carpet' ? selectedCarpetType : null
+      };
     }
 
     const response = await fetch('/api/visualize', {
@@ -878,6 +909,8 @@ function saveToHistory() {
     colorOrStyle = `${selectedFenceMaterial} ${selectedFenceStyle}`;
   } else if (selectedVizType === 'roof') {
     colorOrStyle = selectedRoofColor;
+  } else if (selectedVizType === 'flooring') {
+    colorOrStyle = selectedFlooringStyle;
   }
 
   const historyItem = {
@@ -940,7 +973,8 @@ function getTypeLabel(type) {
   const labels = {
     'paint': 'Pintura',
     'fence': 'Cerca',
-    'roof': 'Techo'
+    'roof': 'Techo',
+    'flooring': 'Pisos'
   };
   return labels[type] || type;
 }
@@ -973,6 +1007,86 @@ function clearHistory() {
     visualizationHistory = [];
     saveHistory();
     renderHistory();
+  }
+}
+
+// ============================================
+// FLOORING HELPER FUNCTIONS
+// ============================================
+
+function handleFlooringCategoryChange() {
+  selectedFlooringCategory = document.getElementById('flooring-category').value;
+
+  // Hide all sub-options
+  document.querySelectorAll('.flooring-sub-options').forEach(el => {
+    el.style.display = 'none';
+  });
+
+  // Show the selected category's sub-options
+  const targetId = `flooring-${selectedFlooringCategory}`;
+  const target = document.getElementById(targetId);
+  if (target) {
+    target.style.display = 'block';
+  }
+
+  // Select first swatch in the newly visible category
+  const firstSwatch = target?.querySelector('.flooring-swatch, .fence-option');
+  if (firstSwatch) {
+    if (firstSwatch.classList.contains('flooring-swatch')) {
+      target.querySelectorAll('.flooring-swatch').forEach(s => s.classList.remove('selected'));
+      firstSwatch.classList.add('selected');
+      selectedFlooringStyle = firstSwatch.dataset.style;
+    } else {
+      target.querySelectorAll('.fence-option').forEach(o => o.classList.remove('selected'));
+      firstSwatch.classList.add('selected');
+      selectedFlooringStyle = firstSwatch.dataset.style;
+    }
+  }
+}
+
+function setupFlooringSwatches() {
+  // Handle color swatches in hardwood, LVP, carpet sections
+  const allFlooringSwatches = document.querySelectorAll('.flooring-swatch');
+  allFlooringSwatches.forEach(swatch => {
+    swatch.addEventListener('click', function() {
+      // Only deselect siblings within the same parent grid
+      const parentGrid = this.closest('.color-grid');
+      if (parentGrid) {
+        parentGrid.querySelectorAll('.flooring-swatch').forEach(s => s.classList.remove('selected'));
+      }
+      this.classList.add('selected');
+      selectedFlooringStyle = this.dataset.style;
+    });
+  });
+}
+
+function setupFlooringTileOptions() {
+  const tileOptions = document.querySelectorAll('#flooring-tile .fence-option');
+  tileOptions.forEach(option => {
+    option.addEventListener('click', function() {
+      tileOptions.forEach(o => o.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedFlooringStyle = this.dataset.style;
+    });
+  });
+  // Select first by default
+  if (tileOptions.length > 0) {
+    tileOptions[0].classList.add('selected');
+  }
+}
+
+function setupFlooringSpecialtyOptions() {
+  const specialtyOptions = document.querySelectorAll('#flooring-specialty .fence-option');
+  specialtyOptions.forEach(option => {
+    option.addEventListener('click', function() {
+      specialtyOptions.forEach(o => o.classList.remove('selected'));
+      this.classList.add('selected');
+      selectedFlooringStyle = this.dataset.style;
+    });
+  });
+  // Select first by default
+  if (specialtyOptions.length > 0) {
+    specialtyOptions[0].classList.add('selected');
   }
 }
 
