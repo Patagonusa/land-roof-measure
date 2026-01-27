@@ -103,10 +103,16 @@
           <div class="upload-area" id="upload-area">
             <div class="upload-icon">📷</div>
             <p>Arrastra una imagen aqui o</p>
-            <label class="upload-btn">
-              Seleccionar Archivo
-              <input type="file" id="image-input" accept="image/*" hidden>
-            </label>
+            <div class="upload-buttons">
+              <label class="upload-btn">
+                Seleccionar Foto
+                <input type="file" id="image-input" accept="image/*" hidden>
+              </label>
+              <label class="upload-btn upload-btn-camera">
+                Tomar Foto
+                <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+              </label>
+            </div>
           </div>
 
           <!-- Image Preview -->

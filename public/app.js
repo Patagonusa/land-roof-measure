@@ -584,6 +584,12 @@ function setupVisualizerEvents() {
     imageInput.addEventListener('change', handleImageSelect);
   }
 
+  // Camera capture input
+  const cameraInput = document.getElementById('camera-input');
+  if (cameraInput) {
+    cameraInput.addEventListener('change', handleImageSelect);
+  }
+
   // Drag and drop
   const uploadArea = document.getElementById('upload-area');
   if (uploadArea) {
@@ -760,12 +766,19 @@ async function uploadImage(file) {
     uploadArea.innerHTML = `
       <div class="upload-icon">📷</div>
       <p>Arrastra una imagen aqui o</p>
-      <label class="upload-btn">
-        Seleccionar Archivo
-        <input type="file" id="image-input" accept="image/*" hidden>
-      </label>
+      <div class="upload-buttons">
+        <label class="upload-btn">
+          Seleccionar Foto
+          <input type="file" id="image-input" accept="image/*" hidden>
+        </label>
+        <label class="upload-btn upload-btn-camera">
+          Tomar Foto
+          <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+        </label>
+      </div>
     `;
     document.getElementById('image-input').addEventListener('change', handleImageSelect);
+    document.getElementById('camera-input').addEventListener('change', handleImageSelect);
   }
 }
 
@@ -784,12 +797,19 @@ function removeImage() {
   uploadArea.innerHTML = `
     <div class="upload-icon">📷</div>
     <p>Arrastra una imagen aqui o</p>
-    <label class="upload-btn">
-      Seleccionar Archivo
-      <input type="file" id="image-input" accept="image/*" hidden>
-    </label>
+    <div class="upload-buttons">
+      <label class="upload-btn">
+        Seleccionar Foto
+        <input type="file" id="image-input" accept="image/*" hidden>
+      </label>
+      <label class="upload-btn upload-btn-camera">
+        Tomar Foto
+        <input type="file" id="camera-input" accept="image/*" capture="environment" hidden>
+      </label>
+    </div>
   `;
   document.getElementById('image-input').addEventListener('change', handleImageSelect);
+  document.getElementById('camera-input').addEventListener('change', handleImageSelect);
 
   // Hide preview and results
   imagePreview.style.display = 'none';
