@@ -347,9 +347,53 @@
             <div class="history-grid" id="history-grid">
               <!-- History items will be added here dynamically -->
             </div>
-            <button class="clear-history-btn" id="clear-history-btn">Limpiar Historial</button>
+            <div class="history-actions">
+              <button class="generate-pdf-btn" id="generate-pdf-btn">Generar PDF para Cliente</button>
+              <button class="clear-history-btn" id="clear-history-btn">Limpiar Historial</button>
+            </div>
           </div>
         </div>
+
+      <!-- PDF Customer Info Modal -->
+      <div class="modal-overlay" id="pdf-modal" style="display: none;">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h3>Informacion del Cliente</h3>
+            <button class="modal-close" id="close-pdf-modal">&times;</button>
+          </div>
+          <div class="modal-body">
+            <div class="form-group">
+              <label for="client-name">Nombre del Cliente:</label>
+              <input type="text" id="client-name" placeholder="Ej: Juan Perez">
+            </div>
+            <div class="form-group">
+              <label for="client-address">Direccion:</label>
+              <input type="text" id="client-address" placeholder="Ej: 123 Main St, Los Angeles, CA 90001">
+            </div>
+            <div class="form-group">
+              <label for="client-phone">Telefono:</label>
+              <input type="text" id="client-phone" placeholder="Ej: (555) 123-4567">
+            </div>
+            <div class="form-group">
+              <label for="client-project">Tipo de Proyecto:</label>
+              <select id="client-project">
+                <option value="Visualizacion de Pintura Exterior">Visualizacion de Pintura Exterior</option>
+                <option value="Visualizacion de Cerca">Visualizacion de Cerca</option>
+                <option value="Visualizacion de Techo">Visualizacion de Techo</option>
+                <option value="Opciones de Colores">Opciones de Colores</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label for="sales-rep">Representante de Ventas:</label>
+              <input type="text" id="sales-rep" placeholder="Ej: Fabiola Donoso" value="Fabiola Donoso">
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button class="btn-cancel" id="cancel-pdf">Cancelar</button>
+            <button class="btn-generate" id="confirm-generate-pdf">Generar PDF</button>
+          </div>
+        </div>
+      </div>
 
       </div>
 
@@ -359,6 +403,7 @@
   </div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
   <script src="app.js"></script>
   <script>
     // Authentication check

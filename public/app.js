@@ -975,3 +975,342 @@ function clearHistory() {
     renderHistory();
   }
 }
+
+// ============================================
+// PDF GENERATION FUNCTIONALITY
+// ============================================
+
+// Setup PDF generation events
+document.addEventListener('DOMContentLoaded', function() {
+  const generatePdfBtn = document.getElementById('generate-pdf-btn');
+  const pdfModal = document.getElementById('pdf-modal');
+  const closePdfModal = document.getElementById('close-pdf-modal');
+  const cancelPdf = document.getElementById('cancel-pdf');
+  const confirmGeneratePdf = document.getElementById('confirm-generate-pdf');
+
+  if (generatePdfBtn) {
+    generatePdfBtn.addEventListener('click', () => {
+      if (visualizationHistory.length === 0) {
+        alert('No hay visualizaciones guardadas para generar el PDF.');
+        return;
+      }
+      pdfModal.style.display = 'flex';
+    });
+  }
+
+  if (closePdfModal) {
+    closePdfModal.addEventListener('click', () => {
+      pdfModal.style.display = 'none';
+    });
+  }
+
+  if (cancelPdf) {
+    cancelPdf.addEventListener('click', () => {
+      pdfModal.style.display = 'none';
+    });
+  }
+
+  if (confirmGeneratePdf) {
+    confirmGeneratePdf.addEventListener('click', generateClientPDF);
+  }
+
+  // Close modal on overlay click
+  if (pdfModal) {
+    pdfModal.addEventListener('click', (e) => {
+      if (e.target === pdfModal) {
+        pdfModal.style.display = 'none';
+      }
+    });
+  }
+});
+
+// Generate branded PDF for client
+async function generateClientPDF() {
+  const { jsPDF } = window.jspdf;
+
+  // Get customer info
+  const clientName = document.getElementById('client-name').value || 'Cliente';
+  const clientAddress = document.getElementById('client-address').value || '';
+  const clientPhone = document.getElementById('client-phone').value || '';
+  const clientProject = document.getElementById('client-project').value;
+  const salesRep = document.getElementById('sales-rep').value || 'Hello Projects Pro';
+
+  // Generate quote number
+  const today = new Date();
+  const quoteNumber = `HPP-VIZ-${today.getFullYear()}-${String(today.getMonth() + 1).padStart(2, '0')}${String(today.getDate()).padStart(2, '0')}`;
+  const dateStr = today.toLocaleDateString('es-ES', { day: 'numeric', month: 'long', year: 'numeric' });
+
+  // Disable button and show loading
+  const confirmBtn = document.getElementById('confirm-generate-pdf');
+  confirmBtn.disabled = true;
+  confirmBtn.textContent = 'Generando...';
+
+  try {
+    // Create PDF (Letter size: 215.9 x 279.4 mm)
+    const pdf = new jsPDF('p', 'mm', 'letter');
+    const pageWidth = pdf.internal.pageSize.getWidth();
+    const pageHeight = pdf.internal.pageSize.getHeight();
+    const margin = 20;
+    let yPos = margin;
+
+    // Helper function to add new page if needed
+    function checkNewPage(requiredSpace) {
+      if (yPos + requiredSpace > pageHeight - margin) {
+        pdf.addPage();
+        yPos = margin;
+        addHeader();
+        return true;
+      }
+      return false;
+    }
+
+    // Helper function to add header
+    function addHeader() {
+      // Company name
+      pdf.setFontSize(28);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(30, 58, 95); // #1E3A5F
+      pdf.text('HELLO PROJECTS PRO', margin, yPos);
+      yPos += 8;
+
+      // Tagline
+      pdf.setFontSize(9);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(100, 100, 100);
+      pdf.text('BBB ACREDITADO | LICENCIA #1135440', margin, yPos);
+      yPos += 5;
+
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(120, 120, 120);
+      pdf.text('Servicios Profesionales de Techado | (888) 706-0080 | helloprojectspro.com', margin, yPos);
+      yPos += 12;
+
+      // Separator line
+      pdf.setDrawColor(30, 58, 95);
+      pdf.setLineWidth(0.5);
+      pdf.line(margin, yPos, pageWidth - margin, yPos);
+      yPos += 10;
+    }
+
+    // Add first page header
+    addHeader();
+
+    // Customer Info Section
+    const colWidth = (pageWidth - 2 * margin) / 2;
+
+    // Left column - Customer Info
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(37, 99, 235); // #2563EB
+    pdf.text('INFORMACION DEL CLIENTE', margin, yPos);
+
+    // Right column - Quote Details
+    pdf.text('DETALLES DE DOCUMENTO', margin + colWidth, yPos);
+    yPos += 6;
+
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(60, 60, 60);
+
+    // Customer details
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(37, 99, 235);
+    pdf.text('NOMBRE:', margin, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(60, 60, 60);
+    pdf.text(clientName, margin + 22, yPos);
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(37, 99, 235);
+    pdf.text('DOCUMENTO:', margin + colWidth, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(60, 60, 60);
+    pdf.text(quoteNumber, margin + colWidth + 28, yPos);
+    yPos += 5;
+
+    if (clientAddress) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(37, 99, 235);
+      pdf.text('DIRECCION:', margin, yPos);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(60, 60, 60);
+      const addressLines = pdf.splitTextToSize(clientAddress, colWidth - 30);
+      pdf.text(addressLines, margin + 25, yPos);
+    }
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(37, 99, 235);
+    pdf.text('FECHA:', margin + colWidth, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(60, 60, 60);
+    pdf.text(dateStr, margin + colWidth + 15, yPos);
+    yPos += 5;
+
+    if (clientPhone) {
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(37, 99, 235);
+      pdf.text('TELEFONO:', margin, yPos);
+      pdf.setFont('helvetica', 'normal');
+      pdf.setTextColor(60, 60, 60);
+      pdf.text(clientPhone, margin + 23, yPos);
+    }
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(37, 99, 235);
+    pdf.text('PROYECTO:', margin + colWidth, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(60, 60, 60);
+    pdf.text(clientProject, margin + colWidth + 24, yPos);
+    yPos += 5;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(37, 99, 235);
+    pdf.text('CONTACTO:', margin + colWidth, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(60, 60, 60);
+    pdf.text(`${salesRep} | (818) 213-0304`, margin + colWidth + 24, yPos);
+    yPos += 15;
+
+    // Section Title
+    pdf.setFillColor(30, 58, 95);
+    pdf.rect(margin, yPos, pageWidth - 2 * margin, 8, 'F');
+    pdf.setFontSize(11);
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(255, 255, 255);
+    pdf.text('OPCIONES DE VISUALIZACION', margin + 3, yPos + 5.5);
+    yPos += 15;
+
+    // Description
+    pdf.setFontSize(10);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(60, 60, 60);
+    pdf.text('A continuacion se presentan las opciones de visualizacion generadas para su proyecto:', margin, yPos);
+    yPos += 10;
+
+    // Add each visualization
+    for (let i = 0; i < visualizationHistory.length; i++) {
+      const item = visualizationHistory[i];
+
+      // Check if we need a new page (image pair needs ~90mm)
+      checkNewPage(100);
+
+      // Option header
+      pdf.setFillColor(37, 99, 235);
+      pdf.rect(margin, yPos, pageWidth - 2 * margin, 7, 'F');
+      pdf.setFontSize(10);
+      pdf.setFont('helvetica', 'bold');
+      pdf.setTextColor(255, 255, 255);
+      pdf.text(`OPCION ${i + 1}: ${getTypeLabel(item.type).toUpperCase()} - ${item.color}`, margin + 3, yPos + 5);
+      yPos += 12;
+
+      // Load and add images
+      const imgWidth = (pageWidth - 2 * margin - 10) / 2;
+      const imgHeight = 55;
+
+      try {
+        // Original image
+        const originalImg = await loadImageAsBase64(item.originalUrl);
+        if (originalImg) {
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(100, 100, 100);
+          pdf.text('ORIGINAL', margin, yPos);
+          yPos += 3;
+          pdf.addImage(originalImg, 'JPEG', margin, yPos, imgWidth, imgHeight);
+        }
+
+        // Generated image
+        const generatedImg = await loadImageAsBase64(item.generatedUrl);
+        if (generatedImg) {
+          pdf.setFontSize(8);
+          pdf.setFont('helvetica', 'bold');
+          pdf.setTextColor(100, 100, 100);
+          pdf.text('VISUALIZACION', margin + imgWidth + 10, yPos - 3);
+          pdf.addImage(generatedImg, 'JPEG', margin + imgWidth + 10, yPos, imgWidth, imgHeight);
+        }
+      } catch (imgError) {
+        console.error('Error loading image:', imgError);
+        pdf.setFontSize(9);
+        pdf.setTextColor(150, 150, 150);
+        pdf.text('(Imagen no disponible)', margin + 30, yPos + 25);
+      }
+
+      yPos += imgHeight + 15;
+    }
+
+    // Add footer on last page
+    checkNewPage(40);
+    yPos = pageHeight - 45;
+
+    // Gold accent line
+    pdf.setDrawColor(196, 164, 132);
+    pdf.setLineWidth(1);
+    pdf.line(margin, yPos, pageWidth - margin, yPos);
+    yPos += 8;
+
+    // Footer text
+    pdf.setFontSize(9);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text('Este documento es una representacion visual de las opciones disponibles para su proyecto.', margin, yPos);
+    yPos += 4;
+    pdf.text('Los colores finales pueden variar ligeramente segun las condiciones de iluminacion y el material utilizado.', margin, yPos);
+    yPos += 8;
+
+    pdf.setFont('helvetica', 'bold');
+    pdf.setTextColor(30, 58, 95);
+    pdf.text('Hello Projects Pro', margin, yPos);
+    pdf.setFont('helvetica', 'normal');
+    pdf.setTextColor(100, 100, 100);
+    pdf.text(' - Transformando hogares con calidad y confianza', margin + 38, yPos);
+
+    // Add page numbers
+    const totalPages = pdf.internal.getNumberOfPages();
+    for (let p = 1; p <= totalPages; p++) {
+      pdf.setPage(p);
+      pdf.setFontSize(8);
+      pdf.setTextColor(150, 150, 150);
+      pdf.text(`Pagina ${p} de ${totalPages}`, pageWidth / 2, pageHeight - 10, { align: 'center' });
+    }
+
+    // Save PDF
+    const fileName = `Visualizaciones_${clientName.replace(/\s+/g, '_')}_${quoteNumber}.pdf`;
+    pdf.save(fileName);
+
+    // Close modal
+    document.getElementById('pdf-modal').style.display = 'none';
+    alert('PDF generado exitosamente!');
+
+  } catch (error) {
+    console.error('Error generating PDF:', error);
+    alert('Error al generar el PDF: ' + error.message);
+  } finally {
+    confirmBtn.disabled = false;
+    confirmBtn.textContent = 'Generar PDF';
+  }
+}
+
+// Load image as base64 for PDF
+function loadImageAsBase64(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.crossOrigin = 'anonymous';
+    img.onload = function() {
+      try {
+        const canvas = document.createElement('canvas');
+        canvas.width = img.width;
+        canvas.height = img.height;
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, 0, 0);
+        const dataURL = canvas.toDataURL('image/jpeg', 0.8);
+        resolve(dataURL);
+      } catch (e) {
+        reject(e);
+      }
+    };
+    img.onerror = function() {
+      reject(new Error('Failed to load image'));
+    };
+    img.src = url;
+  });
+}
