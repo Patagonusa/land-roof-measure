@@ -236,7 +236,18 @@ app.post('/api/visualize', async (req, res) => {
       if (options.category === 'carpet' && options.carpetType) {
         flooringDesc = `${options.carpetType} ${flooringDesc}`;
       }
-      prompt = `Replace ONLY the floor surface in this interior room photo with ${flooringDesc} flooring. The new flooring should look realistic and professionally installed. Keep the walls, ceiling, furniture, fixtures, doors, baseboards, and all other elements exactly the same. Only change the floor surface.`;
+
+      if (options.category === 'carpet') {
+        prompt = `This is an interior room photo. Remove ALL existing flooring completely (whether it is hardwood, tile, carpet, vinyl, concrete, or any other material) and replace the ENTIRE floor area wall-to-wall with new ${flooringDesc}. The carpet must cover every inch of the floor from wall to wall. Keep the walls, ceiling, furniture, fixtures, doors, baseboards, and all other elements exactly the same. Only change the entire floor surface to ${flooringDesc}.`;
+      } else if (options.category === 'tile') {
+        prompt = `This is an interior room photo. Remove ALL existing flooring completely and replace the ENTIRE floor area with new ${flooringDesc}. The tile should have visible grout lines and look professionally installed. Keep the walls, ceiling, furniture, fixtures, doors, baseboards, and all other elements exactly the same. Only change the entire floor surface.`;
+      } else if (options.category === 'hardwood') {
+        prompt = `This is an interior room photo. Remove ALL existing flooring completely and replace the ENTIRE floor area with new ${flooringDesc} with visible wood grain planks running lengthwise. Keep the walls, ceiling, furniture, fixtures, doors, baseboards, and all other elements exactly the same. Only change the entire floor surface.`;
+      } else if (options.category === 'lvp') {
+        prompt = `This is an interior room photo. Remove ALL existing flooring completely and replace the ENTIRE floor area with new ${flooringDesc} with realistic plank pattern. Keep the walls, ceiling, furniture, fixtures, doors, baseboards, and all other elements exactly the same. Only change the entire floor surface.`;
+      } else {
+        prompt = `This is an interior room photo. Remove ALL existing flooring completely and replace the ENTIRE floor area with new ${flooringDesc}. The flooring should look realistic and professionally installed. Keep the walls, ceiling, furniture, fixtures, doors, baseboards, and all other elements exactly the same. Only change the entire floor surface.`;
+      }
     } else {
       return res.status(400).json({ error: 'Invalid visualization type. Use: paint, fence, roof, or flooring' });
     }
