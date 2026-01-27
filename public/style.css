@@ -603,6 +603,20 @@ header h1 {
 }
 
 /* Color Grid */
+.color-category {
+  margin-bottom: 15px;
+}
+
+.color-category .category-label {
+  display: block;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #1E3A5F;
+  margin-bottom: 8px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
 .color-grid {
   display: grid;
   grid-template-columns: repeat(4, 1fr);
