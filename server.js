@@ -230,21 +230,21 @@ app.post('/api/visualize', async (req, res) => {
     } else if (type === 'fence') {
       // Detailed descriptions per fence type for better AI results
       const fenceDescriptions = {
-        'vinyl white': 'a white vinyl privacy fence with smooth solid panels, clean post caps, and no gaps between sections',
-        'vinyl tan': 'a tan beige vinyl privacy fence with smooth solid panels, post caps, and uniform color throughout',
-        'vinyl brown': 'a dark brown vinyl privacy fence with smooth solid panels, matching brown post caps, and rich chocolate brown color',
-        'wood natural cedar': 'a natural cedar wood privacy fence with tight vertical boards showing visible wood grain and natural warm cedar tone',
-        'wood dark stained': 'a dark stained wood privacy fence with vertical boards and deep brown wood stain finish',
-        'wood white painted': 'a white painted wood fence with evenly spaced pickets and clean white paint finish',
-        'metal black wrought iron': 'a black wrought iron ornamental fence with evenly spaced vertical bars and decorative pointed finials on top',
-        'metal bronze': 'a bronze colored metal ornamental fence with evenly spaced vertical bars and a warm bronze metallic finish',
-        'chain link silver galvanized': 'a silver galvanized chain link fence with metal posts and diamond-pattern wire mesh'
+        'vinyl white': 'new white vinyl privacy fence with smooth solid panels and clean post caps',
+        'vinyl tan': 'new tan beige vinyl privacy fence with smooth solid panels and post caps',
+        'vinyl brown': 'new dark brown vinyl privacy fence with smooth solid panels and brown post caps',
+        'wood natural cedar': 'new natural cedar wood privacy fence with vertical boards and visible wood grain',
+        'wood dark stained': 'new dark stained wood privacy fence with vertical boards',
+        'wood white painted': 'new white painted wood picket fence with evenly spaced pickets',
+        'metal black wrought iron': 'new black wrought iron fence with vertical bars and pointed finials',
+        'metal bronze': 'new bronze metal ornamental fence with vertical bars',
+        'chain link silver galvanized': 'new silver chain link fence with metal posts'
       };
 
       const fenceKey = `${options.material} ${options.style}`;
-      const fenceDesc = fenceDescriptions[fenceKey] || `a ${options.material} ${options.style} fence`;
+      const fenceDesc = fenceDescriptions[fenceKey] || `new ${options.material} ${options.style} fence`;
 
-      prompt = `Change ONLY the fence in this property photo to ${fenceDesc}. The new fence must completely replace the existing fence so the old fence is no longer visible. Keep the house, roof, walls, windows, doors, driveway, yard, landscaping, trees, sky, and all other elements exactly the same.`;
+      prompt = `Replace the fence with a ${fenceDesc}. Keep the house, yard, and surroundings the same.`;
     } else if (type === 'roof') {
       prompt = `Change ONLY the roof shingles to ${options.color} color. Keep the walls, siding, gutters, trim, and all other elements exactly the same color as original.`;
     } else if (type === 'flooring') {
@@ -270,7 +270,13 @@ app.post('/api/visualize', async (req, res) => {
       return res.status(400).json({ error: 'Invalid visualization type. Use: paint, fence, roof, or flooring' });
     }
 
-    console.log('Starting visualization with prompt:', prompt);
+    // For fence type, use a negative prompt to avoid keeping the old fence
+    let negativePrompt = '';
+    if (type === 'fence') {
+      negativePrompt = 'old fence, original fence, double fence, two fences, blurry fence, overlapping fences';
+    }
+
+    console.log('Starting visualization:', { type, options, prompt, negativePrompt });
     console.log('Image URL:', imageUrl);
 
     // Download the original image and convert to base64
@@ -300,9 +306,10 @@ app.post('/api/visualize', async (req, res) => {
           instances: [
             {
               prompt: prompt,
+              ...(negativePrompt && { negativePrompt: negativePrompt }),
               referenceImages: [
                 {
-                  referenceType: 'REFERENCE_TYPE_RAW',
+                  referenceType: type === 'fence' ? 'REFERENCE_TYPE_STYLE' : 'REFERENCE_TYPE_RAW',
                   referenceId: 1,
                   referenceImage: {
                     bytesBase64Encoded: base64Image
@@ -312,7 +319,7 @@ app.post('/api/visualize', async (req, res) => {
             }
           ],
           parameters: {
-            sampleCount: 1
+            sampleCount: type === 'fence' ? 2 : 1
           }
         })
       }
@@ -325,7 +332,7 @@ app.post('/api/visualize', async (req, res) => {
     }
 
     const imagenResult = await imagenResponse.json();
-    console.log('Google Imagen result received successfully');
+    console.log('Google Imagen result received, predictions:', imagenResult.predictions?.length || 0);
 
     // Get the generated image from the response
     const generatedBase64 = imagenResult.predictions[0].bytesBase64Encoded;
