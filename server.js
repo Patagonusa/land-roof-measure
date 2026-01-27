@@ -228,7 +228,23 @@ app.post('/api/visualize', async (req, res) => {
     if (type === 'paint') {
       prompt = `Change ONLY the house exterior wall siding paint color to ${options.color}. Keep the roof, gutters, trim, windows, doors, and all other elements exactly the same color as original. Only change the main wall surfaces.`;
     } else if (type === 'fence') {
-      prompt = `Edit this property photo: detect ANY existing fence, railing, or barrier and COMPLETELY REMOVE it, then REPLACE it with a brand new ${options.material} ${options.style} fence. The old fence must be fully gone — no traces, no blending, no overlay. Only the new ${options.material} ${options.style} fence should be visible in the exact location where the old fence was. DO NOT change the house, roof, walls, windows, doors, driveway, landscaping, trees, sky, or any other element. Only the fence changes.`;
+      // Detailed descriptions per fence type for better AI results
+      const fenceDescriptions = {
+        'vinyl white': 'a white vinyl privacy fence with smooth solid panels, clean post caps, and no gaps between sections',
+        'vinyl tan': 'a tan beige vinyl privacy fence with smooth solid panels, post caps, and uniform color throughout',
+        'vinyl brown': 'a dark brown vinyl privacy fence with smooth solid panels, matching brown post caps, and rich chocolate brown color',
+        'wood natural cedar': 'a natural cedar wood privacy fence with tight vertical boards showing visible wood grain and natural warm cedar tone',
+        'wood dark stained': 'a dark stained wood privacy fence with vertical boards and deep brown wood stain finish',
+        'wood white painted': 'a white painted wood fence with evenly spaced pickets and clean white paint finish',
+        'metal black wrought iron': 'a black wrought iron ornamental fence with evenly spaced vertical bars and decorative pointed finials on top',
+        'metal bronze': 'a bronze colored metal ornamental fence with evenly spaced vertical bars and a warm bronze metallic finish',
+        'chain link silver galvanized': 'a silver galvanized chain link fence with metal posts and diamond-pattern wire mesh'
+      };
+
+      const fenceKey = `${options.material} ${options.style}`;
+      const fenceDesc = fenceDescriptions[fenceKey] || `a ${options.material} ${options.style} fence`;
+
+      prompt = `Change ONLY the fence in this property photo to ${fenceDesc}. The new fence must completely replace the existing fence so the old fence is no longer visible. Keep the house, roof, walls, windows, doors, driveway, yard, landscaping, trees, sky, and all other elements exactly the same.`;
     } else if (type === 'roof') {
       prompt = `Change ONLY the roof shingles to ${options.color} color. Keep the walls, siding, gutters, trim, and all other elements exactly the same color as original.`;
     } else if (type === 'flooring') {
