@@ -228,7 +228,7 @@ app.post('/api/visualize', async (req, res) => {
     if (type === 'paint') {
       prompt = `Change ONLY the house exterior wall siding paint color to ${options.color}. Keep the roof, gutters, trim, windows, doors, and all other elements exactly the same color as original. Only change the main wall surfaces.`;
     } else if (type === 'fence') {
-      prompt = `Add a ${options.material} ${options.style} fence to the property. Keep the house and all other elements exactly the same.`;
+      prompt = `Edit this property photo: detect ANY existing fence, railing, or barrier and COMPLETELY REMOVE it, then REPLACE it with a brand new ${options.material} ${options.style} fence. The old fence must be fully gone — no traces, no blending, no overlay. Only the new ${options.material} ${options.style} fence should be visible in the exact location where the old fence was. DO NOT change the house, roof, walls, windows, doors, driveway, landscaping, trees, sky, or any other element. Only the fence changes.`;
     } else if (type === 'roof') {
       prompt = `Change ONLY the roof shingles to ${options.color} color. Keep the walls, siding, gutters, trim, and all other elements exactly the same color as original.`;
     } else if (type === 'flooring') {
