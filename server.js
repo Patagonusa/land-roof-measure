@@ -270,13 +270,7 @@ app.post('/api/visualize', async (req, res) => {
       return res.status(400).json({ error: 'Invalid visualization type. Use: paint, fence, roof, or flooring' });
     }
 
-    // For fence type, use a negative prompt to avoid keeping the old fence
-    let negativePrompt = '';
-    if (type === 'fence') {
-      negativePrompt = 'old fence, original fence, double fence, two fences, blurry fence, overlapping fences';
-    }
-
-    console.log('Starting visualization:', { type, options, prompt, negativePrompt });
+    console.log('Starting visualization:', { type, options, prompt });
     console.log('Image URL:', imageUrl);
 
     // Download the original image and convert to base64
@@ -306,10 +300,9 @@ app.post('/api/visualize', async (req, res) => {
           instances: [
             {
               prompt: prompt,
-              ...(negativePrompt && { negativePrompt: negativePrompt }),
               referenceImages: [
                 {
-                  referenceType: type === 'fence' ? 'REFERENCE_TYPE_STYLE' : 'REFERENCE_TYPE_RAW',
+                  referenceType: 'REFERENCE_TYPE_RAW',
                   referenceId: 1,
                   referenceImage: {
                     bytesBase64Encoded: base64Image
@@ -319,7 +312,7 @@ app.post('/api/visualize', async (req, res) => {
             }
           ],
           parameters: {
-            sampleCount: type === 'fence' ? 2 : 1
+            sampleCount: 1
           }
         })
       }
